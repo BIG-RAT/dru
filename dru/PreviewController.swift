@@ -73,6 +73,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
         let position = "\(prevAllRecordValuesArray[recordNumber]["position"] ?? "")"
         let department = "\(prevAllRecordValuesArray[recordNumber]["department"] ?? "")"
         let building = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
+        let room = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
 
         getEndpoint(id: serialNumber) {
             (result: Dictionary) in
@@ -83,12 +84,12 @@ class PreviewController: NSViewController, URLSessionDelegate {
                 "<html>" +
                 "<head>" +
                 "<style>" +
-                "body { background-color: #FFFFFF; }" +
+                "body { color: white; background-color: #619CC7; }" +
                 "table, th, td {" +
                 "border: 0px solid black;padding-right: 3px;" +
                 "}" +
                 "#table1 { border-collapse: collapse; table-layout: fixed; margin: auto; }" +
-                "th, td { border-bottom: 1px solid #ddd; }" +
+                "th, td { border-bottom: 1px solid #4C7A9B; }" +    //#ddd
 //                "tr:nth-child(even) { background-color: #FFFFFF; }" +
                 "</style>" +
                 "</head>" +
@@ -118,13 +119,15 @@ class PreviewController: NSViewController, URLSessionDelegate {
                 self.addTableRow(attribute: "Email Address", existing: "\(existingValuesDict["email_address"] ?? "")", update: "\(emailAddress)") +
                 self.addTableRow(attribute: "Phone Number", existing: "\(existingValuesDict["phone_number"] ?? "")", update: "\(phoneNumber)") +
                 self.addTableRow(attribute: "Position", existing: "\(existingValuesDict["position"] ?? "")", update: "\(position)") +
+                self.addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
                 self.addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
-                "<tr>" +
-                "<td style=\"text-align:right\">Department:</td>" +
-                
-                "<td>\(existingValuesDict["department"] ?? "")</td>" +
-                "<td>\(department)</td>" +
-                "</tr>" +
+                self.addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
+//                "<tr>" +
+//                "<td style=\"text-align:right\">Department:</td>" +
+//
+//                "<td>\(existingValuesDict["department"] ?? "")</td>" +
+//                "<td>\(department)</td>" +
+//                "</tr>" +
                 self.addEaToTable(updateValues: self.prevAllRecordValuesArray[recordNumber]) +
 //                "<tr>" +
 //                "<td style=\"text-align:left\">Extension Attributes</td>" +
@@ -288,14 +291,29 @@ class PreviewController: NSViewController, URLSessionDelegate {
 
     func addTableRow(attribute: String, existing: String, update: String) -> String {
         var currentRow = ""
-        if !(existing == "" && update == "") {
-        currentRow = "<tr>" +
-            "<td style=\"text-align:right\">\(attribute):</td>" +
-            "<td>\(existing)</td>" +
-            "\((existing == update) ? "<td>\(update)</td>":"<td style='color:red'>\(update)</td>")" +
+        var updateText = ""
+        var existingText = "<td>\(existing)</td>"
+        
+        print("\(attribute): \t existing: .\(existing). \t update: .\(update).")
+
+        if existing != "" || update != "" {
+            if ((existing != "" && update != "") && (existing != update)) {
+                updateText = "<td style='color:yellow'>\(update)</td>"
+            } else if (existing == "" && update != "") {
+                updateText = "<td style='color:blue'>\(update)</td>"
+            } else {
+                updateText = "<td>\(existing)</td>"
+            }
+            // mark attribute values getting removed
+            if existing != "" && update == " " {
+                existingText = "<td style='color:red'>\(existing)</td>"
+            }
+            currentRow = "<tr>" +
+                "<td style=\"text-align:right\">\(attribute):</td>" +
+                "\(existingText)" +
+                "\(updateText)" +
             "</tr>"
         }
-        
         return "\(currentRow)"
     }
     

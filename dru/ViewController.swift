@@ -47,6 +47,8 @@ class ViewController: NSViewController, URLSessionDelegate {
     var xmlString       = [String]()
     var deviceType      = ""
     var recordId        = "serialnumber"
+    var backupBtnState  = 1 // 1 - backup before updating, 0 - no backup
+    var createdBackup   = false
     
     var dataArray       = [String]()
 
@@ -84,6 +86,12 @@ class ViewController: NSViewController, URLSessionDelegate {
     var backupFile = ""
     var backupFileHandle = FileHandle(forUpdatingAtPath: "")
     var writeHeader = true
+    
+    @IBAction func f_backupBtnState(_ sender: NSButton) {
+        DispatchQueue.main.async {
+            self.backupBtnState = self.backup_button.state.rawValue
+        }
+    }
     
     @IBAction func loadFile_PathControl(_ sender: NSPathControl) {
         
@@ -171,7 +179,6 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     
     @IBAction func parseFile_Button(_ sender: Any) {
- 
         if (sender as AnyObject).title == "Update" {
             
             deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
@@ -179,11 +186,11 @@ class ViewController: NSViewController, URLSessionDelegate {
             var failCount = 0
             var remaining = allRecordValuesArray.count
             
-            dateTime = getDateTime(x: 1)
-            backupFile = backupPath + dateTime + ".csv"
-            createFileFolder(itemPath: backupFile, objectType: "file")
-            backupFileHandle = FileHandle(forUpdatingAtPath: backupFile)
-            writeHeader = true
+//            dateTime = getDateTime(x: 1)
+//            backupFile = backupPath + dateTime + ".csv"
+//            createFileFolder(itemPath: backupFile, objectType: "file")
+//            backupFileHandle = FileHandle(forUpdatingAtPath: backupFile)
+//            writeHeader = true
 
             switch deviceType {
             case "computers":
@@ -362,34 +369,42 @@ class ViewController: NSViewController, URLSessionDelegate {
         var localBuilding = ""
         var localRoom = ""
         var localEa = ""
+        var newValue = ""
         
         var localDevice = ""    // define device xml tag, computer or mobile_device
         
         for (key,value) in localRecordDict {
 //            print("key: \(key)\t value: \(value)")
+            // allow a single space to be used to remove an attribute
+            switch value {
+            case " ":
+                newValue = ""
+            default:
+                newValue = value
+            }
             switch key {
             case "deviceName":
-                value == "" ? (localDeviceName = "") : (localDeviceName = "<name>\(value)</name>")
+                value == "" ? (localDeviceName = "") : (localDeviceName = "<name>\(newValue)</name>")
             case "asset_tag":
-                value == "" ? (localUsername = "") : (localAssetTag = "<asset_tag>\(value)</asset_tag>")
+                value == "" ? (localUsername = "") : (localAssetTag = "<asset_tag>\(newValue)</asset_tag>")
             case "siteName":
-                value == "" ? (localSiteName = "") : (localSiteName = "<site><name>\(value)</name></site>")
+                value == "" ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
             case "username":
-                value == "" ? (localUsername = "") : (localUsername = "<username>\(value)</username>")
+                value == "" ? (localUsername = "") : (localUsername = "<username>\(newValue)</username>")
             case "real_name":
-                value == "" ? (localRealName = "") : (localRealName = "<real_name>\(value)</real_name>")
+                value == "" ? (localRealName = "") : (localRealName = "<real_name>\(newValue)</real_name>")
             case "email_address":
-                value == "" ? (localEmailAddress = "") : (localEmailAddress = "<email_address>\(value)</email_address>")
+                value == "" ? (localEmailAddress = "") : (localEmailAddress = "<email_address>\(newValue)</email_address>")
             case "position":
-                value == "" ? (localPosition = "") : (localPosition = "<position>\(value)</position>")
+                value == "" ? (localPosition = "") : (localPosition = "<position>\(newValue)</position>")
             case "phone_number":
-                value == "" ? (localPhone = "") : (localPhone = "<phone>\(value)</phone>")
+                value == "" ? (localPhone = "") : (localPhone = "<phone>\(newValue)</phone>")
             case "department":
-                value == "" ? (localDepartment = "") : (localDepartment = "<department>\(value)</department>")
+                value == "" ? (localDepartment = "") : (localDepartment = "<department>\(newValue)</department>")
             case "building":
-                value == "" ? (localBuilding = "") : (localBuilding = "<building>\(value)</building>")
+                value == "" ? (localBuilding = "") : (localBuilding = "<building>\(newValue)</building>")
             case "room":
-                value == "" ? (localRoom = "") : (localRoom.append("<room>\(value)</room>"))
+                value == "" ? (localRoom = "") : (localRoom.append("<room>\(newValue)</room>"))
             default:
                 // handle extension attributes here
                 if key.first == "_" {
@@ -397,11 +412,9 @@ class ViewController: NSViewController, URLSessionDelegate {
                     name.remove(at: name.startIndex)
 //                    name.characters.dropFirst(1)
 //                    print(name)
-                    value == "" ? (localEa.append("")) : (localEa = "<extension_attribute><name>\(name)</name><value>\(value)</value></extension_attribute>")
+                    value == "" ? (localEa.append("")) : (localEa = "<extension_attribute><name>\(name)</name><value>\(newValue)</value></extension_attribute>")
                 }
-                //                break
             }
-            
         }
         self.deviceType == "computers" ? (localDevice = "computer") : (localDevice = "mobile_device")
         let generatedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -423,6 +436,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     func update(DeviceType: String, endpointXML: String, endpointCurrent: Int, endpointCount: Int, action: String, uniqueID: String, completion: @escaping (Bool) -> Bool) {
         // this is where we create the new endpoint
         let safeCharSet = CharacterSet.alphanumerics
+        jssURL = self.jssURL_TextField.stringValue
         var DestURL = ""
         let Uid = "\(uniqueID)".addingPercentEncoding(withAllowedCharacters: safeCharSet)!
         
@@ -430,14 +444,14 @@ class ViewController: NSViewController, URLSessionDelegate {
         let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
         jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
         
+        DestURL = "\(jssURL)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
+        DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
+        
         theUpdateQ.maxConcurrentOperationCount = 1
         let semaphore = DispatchSemaphore(value: 0)
         let encodedXML = endpointXML.data(using: String.Encoding.utf8)
         
         theUpdateQ.addOperation {
-            
-            DestURL = "\(self.jssURL_TextField.stringValue)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
-            DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
             
 //            print("processing device \(endpointCurrent)")
 //            print("URL: \(DestURL)")
@@ -447,7 +461,8 @@ class ViewController: NSViewController, URLSessionDelegate {
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             
             // backup record here
-            self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
+            self.backup(deviceUrl: DestURL, fn_deviceType: self.deviceType) {
+//                self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
                 (backupResult: Bool) in
                 
                 print("returned from backup: \(Uid)")
@@ -511,9 +526,11 @@ class ViewController: NSViewController, URLSessionDelegate {
     // func alert_dialog - end
     
     
-    func backup(deviceId: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
+    func backup(deviceUrl: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
+//        func backup(deviceId: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
         let semaphore = DispatchSemaphore(value: 1)
-        if backup_button.state.rawValue == 1 {
+        
+        if backupBtnState  == 1 {
             var fn_fullRecordDict = [String:Any]()
             var getResult = false
             var fn_currentRecordDict = [String:String]()
@@ -523,155 +540,165 @@ class ViewController: NSViewController, URLSessionDelegate {
             var recordText = ""
             var xmlTag = ""
             
-            theBackupQ.async {
-    //        theUpdateQ.addOperation {
-                var serverUrl = "\(self.jssURL_TextField.stringValue)/JSSResource/\(fn_deviceType)/\(self.recordId)/\(deviceId)"
-                serverUrl = serverUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
+            if !createdBackup {
+                dateTime = getDateTime(x: 1)
+                backupFile = backupPath + dateTime + ".csv"
+                createFileFolder(itemPath: backupFile, objectType: "file")
+                backupFileHandle = FileHandle(forUpdatingAtPath: backupFile)
+                writeHeader = true
+                createdBackup = true
+            }
+            
+//                serverUrl = "\(jssURL)/JSSResource/\(fn_deviceType)/\(self.recordId)/\(deviceId)"
+//                let serverUrl = deviceUrl   // serverUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
                 //            print("serverUrl: \(serverUrl)")
-                
-                let serverEncodedURL = NSURL(string: serverUrl)
+            
+                let serverEncodedURL = NSURL(string: deviceUrl)
                 let serverRequest = NSMutableURLRequest(url: serverEncodedURL! as URL)
-    //            print("serverRequest: \(serverRequest)")
+                //            print("serverRequest: \(serverRequest)")
                 serverRequest.httpMethod = "GET"
-                print("getting: \(fn_deviceType)")
+                print("getting: \(deviceUrl)")
                 
                 let configuration = URLSessionConfiguration.default
                 configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Accept" : "application/json"]
-    //            fn_request.httpBody = encodedXML!
+                //            fn_request.httpBody = encodedXML!
                 let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: OperationQueue.main)
-                let task = session.dataTask(with: serverRequest as URLRequest, completionHandler: {
-                    (data, response, error) -> Void in
-                    if let httpResponse = response as? HTTPURLResponse {
-    //                    print("statusCode: ",httpResponse.statusCode)
-    //                    print("httpResponse: ",httpResponse)
-                        //print("POST XML-\(endpointCurrent): endpointType: \(endpointType)  endpointNumber: \(endpointCurrent)")
-                        do {
-                            let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-                            if let endpointJSON = json as? [String: Any] {
-                                switch fn_deviceType {
-                                case "computers":
-                                    print("computer case")
-                                    fn_fullRecordDict = endpointJSON["computer"] as! [String:Any]
-                                    // general info
-                                    fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
-                                    fn_currentRecordDict["deviceName"] = fn_generalDict["name"] as? String
-                                    fn_currentRecordDict["mac_address"] = fn_generalDict["mac_address"] as? String
-                                    fn_currentRecordDict["serial_number"] = fn_generalDict["serial_number"] as? String
-                                    fn_currentRecordDict["asset_tag"] = fn_generalDict["asset_tag"] as? String
-                                    let currentSiteDict = fn_generalDict["site"] as! [String:Any]
-                                    fn_currentRecordDict["siteName"] = currentSiteDict["name"] as? String
-                                    // location info
-                                    fn_locationDict = fn_fullRecordDict["location"] as! [String:Any]
-                                    fn_currentRecordDict["username"] = fn_locationDict["username"] as? String
-                                    fn_currentRecordDict["real_name"] = fn_locationDict["real_name"] as? String
-                                    fn_currentRecordDict["email_address"] = fn_locationDict["email_address"] as? String
-                                    fn_currentRecordDict["position"] = fn_locationDict["position"] as? String
-                                    fn_currentRecordDict["phone_number"] = fn_locationDict["phone_number"] as? String
-                                    fn_currentRecordDict["department"] = fn_locationDict["department"] as? String
-                                    fn_currentRecordDict["building"] = fn_locationDict["building"] as? String
-                                    fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
-                                    // extension attributes
-                                    fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
-    //                                print("\nEAs: \(fn_extAttributesDict.count)")
-    //                                print("EAs: \(fn_extAttributesDict)")
-                                    for i in (0..<fn_extAttributesDict.count) {
-                                        let EaName = fn_extAttributesDict[i]["name"] as! String
-                                        let EaValue = fn_extAttributesDict[i]["value"]
-                                        fn_currentRecordDict[EaName] = (EaValue as! String)
-                                    }
-                                    
-                                // default is iOS
-                                default:
-                                    print("iOS case")
-                                    fn_fullRecordDict = endpointJSON["mobile_device"] as! [String:Any]
-                                    // general info
-                                    fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
-                                    fn_currentRecordDict["deviceName"] = fn_generalDict["name"] as? String
-                                    fn_currentRecordDict["wifi_mac_address"] = fn_generalDict["wifi_mac_address"] as? String
-                                    fn_currentRecordDict["serial_number"] = fn_generalDict["serial_number"] as? String
-                                    fn_currentRecordDict["asset_tag"] = fn_generalDict["asset_tag"] as? String
-                                    let currentSiteDict = fn_generalDict["site"] as! [String:Any]
-                                    fn_currentRecordDict["siteName"] = currentSiteDict["name"] as? String
-                                    // location info
-                                    fn_locationDict = fn_fullRecordDict["location"] as! [String:Any]
-                                    fn_currentRecordDict["username"] = fn_locationDict["username"] as? String
-                                    fn_currentRecordDict["real_name"] = fn_locationDict["real_name"] as? String
-                                    fn_currentRecordDict["email_address"] = fn_locationDict["email_address"] as? String
-                                    fn_currentRecordDict["position"] = fn_locationDict["position"] as? String
-                                    fn_currentRecordDict["phone_number"] = fn_locationDict["phone_number"] as? String
-                                    fn_currentRecordDict["department"] = fn_locationDict["department"] as? String
-                                    fn_currentRecordDict["building"] = fn_locationDict["building"] as? String
-                                    fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
-                                    // extension attributes
-                                    fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
-//                                                                    print("\nEAs: \(fn_extAttributesDict.count)")
-//                                                                    print("EAs: \(fn_extAttributesDict)")
-                                    for i in (0..<fn_extAttributesDict.count) {
-                                        let EaName = fn_extAttributesDict[i]["name"] as! String
-                                        let EaValue = fn_extAttributesDict[i]["value"]
-                                        fn_currentRecordDict[EaName] = (EaValue as! String)
-//                                        if self.prevLowercaseEaHeaderArray.index(of: (EaName.lowercased())) != nil {
-//                                            self.currentEaValuesDict[EaName] = "\(EaValue ?? "")"
-//                                        }
-                                        //                                    self.lowercaseEaValuesDict[EaName.lowercased()] = EaName
-                                    }
-                                }   // switch - end
-                                if self.writeHeader {
-                                    for (tag, _) in fn_currentRecordDict {
-                                        switch tag {
-                                            case "deviceName":
-                                                xmlTag = "computer name"
-                                            case "siteName":
-                                                xmlTag = "site"
-                                            case "phone_number":
-                                                xmlTag = "phone number"
-                                            case "real_name":
-                                                xmlTag = "full name"
-                                            default:
-                                                xmlTag = tag
+            
+                self.theBackupQ.async {
+                    let task = session.dataTask(with: serverRequest as URLRequest, completionHandler: {
+                        (data, response, error) -> Void in
+                        if let httpResponse = response as? HTTPURLResponse {
+        //                    print("statusCode: ",httpResponse.statusCode)
+        //                    print("httpResponse: ",httpResponse)
+                            //print("POST XML-\(endpointCurrent): endpointType: \(endpointType)  endpointNumber: \(endpointCurrent)")
+                            do {
+                                let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
+                                if let endpointJSON = json as? [String: Any] {
+                                    switch fn_deviceType {
+                                    case "computers":
+                                        print("computer case")
+                                        fn_fullRecordDict = endpointJSON["computer"] as! [String:Any]
+                                        // general info
+                                        fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
+                                        fn_currentRecordDict["deviceName"] = fn_generalDict["name"] as? String
+                                        fn_currentRecordDict["mac_address"] = fn_generalDict["mac_address"] as? String
+                                        fn_currentRecordDict["serial_number"] = fn_generalDict["serial_number"] as? String
+                                        fn_currentRecordDict["asset_tag"] = fn_generalDict["asset_tag"] as? String
+                                        let currentSiteDict = fn_generalDict["site"] as! [String:Any]
+                                        fn_currentRecordDict["siteName"] = currentSiteDict["name"] as? String
+                                        // location info
+                                        fn_locationDict = fn_fullRecordDict["location"] as! [String:Any]
+                                        fn_currentRecordDict["username"] = fn_locationDict["username"] as? String
+                                        fn_currentRecordDict["real_name"] = fn_locationDict["real_name"] as? String
+                                        fn_currentRecordDict["email_address"] = fn_locationDict["email_address"] as? String
+                                        fn_currentRecordDict["position"] = fn_locationDict["position"] as? String
+                                        fn_currentRecordDict["phone_number"] = fn_locationDict["phone_number"] as? String
+                                        fn_currentRecordDict["department"] = fn_locationDict["department"] as? String
+                                        fn_currentRecordDict["building"] = fn_locationDict["building"] as? String
+                                        fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
+                                        // extension attributes
+                                        fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
+        //                                print("\nEAs: \(fn_extAttributesDict.count)")
+        //                                print("EAs: \(fn_extAttributesDict)")
+                                        for i in (0..<fn_extAttributesDict.count) {
+                                            let EaName = fn_extAttributesDict[i]["name"] as! String
+                                            let EaValue = fn_extAttributesDict[i]["value"]
+                                            fn_currentRecordDict[EaName] = (EaValue as! String)
                                         }
-                                        recordText.append(xmlTag + ",")
+                                        
+                                    // default is iOS
+                                    default:
+                                        print("iOS case")
+                                        fn_fullRecordDict = endpointJSON["mobile_device"] as! [String:Any]
+                                        // general info
+                                        fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
+                                        fn_currentRecordDict["deviceName"] = fn_generalDict["name"] as? String
+                                        fn_currentRecordDict["wifi_mac_address"] = fn_generalDict["wifi_mac_address"] as? String
+                                        fn_currentRecordDict["serial_number"] = fn_generalDict["serial_number"] as? String
+                                        fn_currentRecordDict["asset_tag"] = fn_generalDict["asset_tag"] as? String
+                                        let currentSiteDict = fn_generalDict["site"] as! [String:Any]
+                                        fn_currentRecordDict["siteName"] = currentSiteDict["name"] as? String
+                                        // location info
+                                        fn_locationDict = fn_fullRecordDict["location"] as! [String:Any]
+                                        fn_currentRecordDict["username"] = fn_locationDict["username"] as? String
+                                        fn_currentRecordDict["real_name"] = fn_locationDict["real_name"] as? String
+                                        fn_currentRecordDict["email_address"] = fn_locationDict["email_address"] as? String
+                                        fn_currentRecordDict["position"] = fn_locationDict["position"] as? String
+                                        fn_currentRecordDict["phone_number"] = fn_locationDict["phone_number"] as? String
+                                        fn_currentRecordDict["department"] = fn_locationDict["department"] as? String
+                                        fn_currentRecordDict["building"] = fn_locationDict["building"] as? String
+                                        fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
+                                        // extension attributes
+                                        fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
+    //                                                                    print("\nEAs: \(fn_extAttributesDict.count)")
+    //                                                                    print("EAs: \(fn_extAttributesDict)")
+                                        for i in (0..<fn_extAttributesDict.count) {
+                                            let EaName = fn_extAttributesDict[i]["name"] as! String
+                                            let EaValue = fn_extAttributesDict[i]["value"]
+                                            fn_currentRecordDict[EaName] = (EaValue as! String)
+                                        }
+                                    }   // switch - end
+                                    if self.writeHeader {
+                                        for (tag, _) in fn_currentRecordDict {
+                                            switch tag {
+                                                case "deviceName":
+                                                    xmlTag = "computer name"
+                                                case "siteName":
+                                                    xmlTag = "site"
+                                                case "phone_number":
+                                                    xmlTag = "phone number"
+                                                case "real_name":
+                                                    xmlTag = "full name"
+                                                default:
+                                                    xmlTag = tag
+                                            }
+                                            recordText.append(xmlTag + ",")
+                                        }
+    //                                    recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
+                                        recordText = String(recordText[..<recordText.endIndex])
+                                        self.writeToBackup(stringOfText: "\(recordText)\n")
+                                        recordText = ""
+                                        self.writeHeader = false
                                     }
-                                    recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))
+                                    for (_, value) in fn_currentRecordDict {
+                                        recordText.append(value + ",")
+                                    }
+    //                                recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
+                                    recordText = String(recordText[..<recordText.endIndex])
                                     self.writeToBackup(stringOfText: "\(recordText)\n")
                                     recordText = ""
-                                    self.writeHeader = false
-                                }
-                                for (_, value) in fn_currentRecordDict {
-                                    recordText.append(value + ",")
-                                }
-                                recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))
-                                self.writeToBackup(stringOfText: "\(recordText)\n")
-                                recordText = ""
 
-                                
-                            }   // if let serverEndpointJSON - end
-                        } catch {
-                            print("[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
-                        }   // end do/catch
+                                    
+                                }   // if let serverEndpointJSON - end
+                            } catch {
+                                print("[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
+                            }   // end do/catch
 
-                        if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-    //                        print("\nbackup record: \(fn_fullRecordDict)\n")
-                            getResult = true
-                        } else {
-                            // something failed
-                            print("httpResponse[failed]: \(httpResponse)")
-                            print("statusCode[failed]: \(httpResponse.statusCode)")
-                            getResult = false
+                            if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
+        //                        print("\nbackup record: \(fn_fullRecordDict)\n")
+                                getResult = true
+                            } else {
+                                // something failed
+                                print("httpResponse[failed]: \(httpResponse)")
+                                print("statusCode[failed]: \(httpResponse.statusCode)")
+                                getResult = false
+                            }
                         }
-                    }
-                    
-                    semaphore.signal()
-                    if error != nil {
-                    }
-                })
-                task.resume()
-                semaphore.wait()
-            }   // theOpQ.addOperation - end
-            completion(getResult)
-        } else {
+                        
+                        semaphore.signal()
+                        if error != nil {
+                        }
+                    })
+                    task.resume()
+                    semaphore.wait()
+                }   // self.theBackupQ.async - end
+                completion(getResult)
+//            } else {
+//                completion(true)
+        } else {   // if backupBtnState - end
             completion(true)
         }
+        
     }
     
     func createFileFolder(itemPath: String, objectType: String) {
@@ -733,7 +760,10 @@ class ViewController: NSViewController, URLSessionDelegate {
             self.remaining_TextField.stringValue = "\(remaining)"
             self.updated_TextField.stringValue = "\(updated)"
             self.failed_TextField.stringValue = "\(failed)"
-            
+            if remaining == 0 {
+                self.backupFileHandle?.closeFile()
+                self.createdBackup = false
+            }
         }
     }
     
