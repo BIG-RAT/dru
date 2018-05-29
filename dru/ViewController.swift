@@ -185,12 +185,6 @@ class ViewController: NSViewController, URLSessionDelegate {
             var successCount = 0
             var failCount = 0
             var remaining = allRecordValuesArray.count
-            
-//            dateTime = getDateTime(x: 1)
-//            backupFile = backupPath + dateTime + ".csv"
-//            createFileFolder(itemPath: backupFile, objectType: "file")
-//            backupFileHandle = FileHandle(forUpdatingAtPath: backupFile)
-//            writeHeader = true
 
             switch deviceType {
             case "computers":
