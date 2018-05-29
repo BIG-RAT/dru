@@ -7,19 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B543C78A1F3BDF8B0090227C /* PreviewController.swift */; };
 		B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20441F38E0F700C16EAA /* AppDelegate.swift */; };
 		B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20461F38E0F700C16EAA /* ViewController.swift */; };
 		B5AC20491F38E0F700C16EAA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5AC20481F38E0F700C16EAA /* Assets.xcassets */; };
 		B5AC204C1F38E0F700C16EAA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5AC204A1F38E0F700C16EAA /* Main.storyboard */; };
+		B5B03C4E1F8172510018DB04 /* settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5B03C4D1F8172510018DB04 /* settings.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B543C78A1F3BDF8B0090227C /* PreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewController.swift; sourceTree = "<group>"; };
 		B5AC20411F38E0F700C16EAA /* dru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5AC20441F38E0F700C16EAA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B5AC20461F38E0F700C16EAA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		B5AC20481F38E0F700C16EAA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B5AC204B1F38E0F700C16EAA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5AC204D1F38E0F700C16EAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B5B03C4D1F8172510018DB04 /* settings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = settings.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,9 +58,11 @@
 			children = (
 				B5AC20441F38E0F700C16EAA /* AppDelegate.swift */,
 				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
+				B543C78A1F3BDF8B0090227C /* PreviewController.swift */,
 				B5AC20481F38E0F700C16EAA /* Assets.xcassets */,
 				B5AC204A1F38E0F700C16EAA /* Main.storyboard */,
 				B5AC204D1F38E0F700C16EAA /* Info.plist */,
+				B5B03C4D1F8172510018DB04 /* settings.plist */,
 			);
 			path = dru;
 			sourceTree = "<group>";
@@ -94,6 +100,7 @@
 					B5AC20401F38E0F700C16EAA = {
 						CreatedOnToolsVersion = 8.3.3;
 						DevelopmentTeam = PS2F6S478M;
+						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -121,6 +128,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5B03C4E1F8172510018DB04 /* settings.plist in Resources */,
 				B5AC20491F38E0F700C16EAA /* Assets.xcassets in Resources */,
 				B5AC204C1F38E0F700C16EAA /* Main.storyboard in Resources */,
 			);
@@ -135,6 +143,7 @@
 			files = (
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
 				B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */,
+				B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,7 +263,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -268,7 +278,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -291,6 +302,7 @@
 				B5AC20521F38E0F700C16EAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

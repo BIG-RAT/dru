@@ -10,11 +10,43 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
+    
+    
+    let fm = FileManager()
+    let vc = ViewController()
+    
+    // create blank data file - start
+    @IBAction func blankDataFile(_ sender: NSMenuItem) {
+        var theTemplate = ""
+        var header:Data?
 
+        let fileType = "\(sender.title)"
+        switch fileType {
+        case "iOS":
+            theTemplate = "iOS_druTemplate.csv"
+            header = "display name, serial number, asset tag, full name, username, email address, building, department, device phone number, site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
+        default:
+            theTemplate = "macOS_druTemplate.csv"
+            header = "computer name, serial number, asset tag, full name, username, email address, building, department, phone number, site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
+        }
+        if !(fm.fileExists(atPath: NSHomeDirectory() + "/Desktop/\(theTemplate)")) {
+            fm.createFile(atPath: NSHomeDirectory() + "/Desktop/\(theTemplate)", contents: nil, attributes: nil)
+            let templateFileHandle = FileHandle(forUpdatingAtPath: (NSHomeDirectory() + "/Desktop/\(theTemplate)"))
+            
+            templateFileHandle?.write(header!)
+        } else {
+            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), already exists on your Desktop.")
+        }
+    }
+    // create blank data file - end
+    
+    func applicationWillFinishLaunching(_ notification: Notification) {
 
+    }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
+
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
