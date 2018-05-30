@@ -15,7 +15,8 @@ A header row is required in the data file.  A template can be created from the f
 The application will look for known headers; computer name, display name, serial number, serial_number, udid, asset tag, asset_tag, full name, username, email address, email_address, building, department,position, room, phone number, user phone number, device phone number, phone, site.  Other headers will be classified as extensions attributes.  As a result you cannot have an extension attributed titled the same as a know header.  For example you can't have an extension attribute called site as it is defined as a known header (taken by a built in attribute), or 'computer name' as it is associated with the built in attribute 'name' from a computer record.  Note, using these known headers allows one to export an advanced search to create a data file.
 Currently updates are based on serial number, that being the only required data field (column).
 
-**To Dos:**
+**To Do:**
+
 *Better formatting.
 *More error checking.
 *Add update button to preview field, to test updating the previewed device?
