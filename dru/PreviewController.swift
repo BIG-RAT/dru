@@ -61,7 +61,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
     }
     
     func generatePage(recordNumber: Int) {
-        print("present values: \(prevAllRecordValuesArray[recordNumber])")
+//        print("present values: \(prevAllRecordValuesArray[recordNumber])")
         let theDevice = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
         let serialNumber = "\(prevAllRecordValuesArray[recordNumber]["serial_number"] ?? "")"
         let assetTag = "\(prevAllRecordValuesArray[recordNumber]["asset_tag"] ?? "")"
@@ -77,9 +77,9 @@ class PreviewController: NSViewController, URLSessionDelegate {
 
         getEndpoint(id: serialNumber) {
             (result: Dictionary) in
-            print("result: \(result)")
+//            print("result: \(result)")
             let existingValuesDict = result
-            print("bundle path: \(Bundle.main.bundlePath)")
+//            print("bundle path: \(Bundle.main.bundlePath)")
             self.previewPage = "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
@@ -147,7 +147,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
             
             let serverEncodedURL = NSURL(string: serverUrl)
             let serverRequest = NSMutableURLRequest(url: serverEncodedURL! as URL)
-            print("serverRequest: \(serverRequest)")
+//            print("serverRequest: \(serverRequest)")
             serverRequest.httpMethod = "GET"
             let serverConf = URLSessionConfiguration.default
             serverConf.httpAdditionalHeaders = ["Authorization" : "Basic \(self.previewJamfCreds)", "Content-Type" : "application/json", "Accept" : "application/json"]
@@ -279,7 +279,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
         var updateText = ""
         var existingText = "<td>\(existing)</td>"
         
-        print("\(attribute): \t existing: .\(existing). \t update: .\(update).")
+//        print("\(attribute): \t existing: .\(existing). \t update: .\(update).")
 
         if existing != "" || update != "" {
             if ((existing != "" && update != "") && (existing != update)) {

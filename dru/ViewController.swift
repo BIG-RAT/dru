@@ -200,10 +200,10 @@ class ViewController: NSViewController, URLSessionDelegate {
 //                        print("result: \(result)")
                         if result {
                             successCount += 1
-                            print("sucessCount: \(successCount)\n")
+//                            print("successCount: \(successCount)\n")
                         } else {
                             failCount += 1
-                            print("failCount: \(failCount)\n")
+//                            print("failCount: \(failCount)\n")
                         }
                         remaining -= 1
                         self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
@@ -325,8 +325,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             prevChar = currChar
             charPosition += 1
         }   // while charPosition - end
-        print("fieldArray: \(fieldArray)")
-//        return fieldArray
+//        print("fieldArray: \(fieldArray)")
         return fieldArray as [String]
     }
     
@@ -382,7 +381,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             case "asset_tag":
                 value == "" ? (localUsername = "") : (localAssetTag = "<asset_tag>\(newValue)</asset_tag>")
             case "siteName":
-                value == "" ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
+                (value == "" || value == "None") ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
             case "username":
                 value == "" ? (localUsername = "") : (localUsername = "<username>\(newValue)</username>")
             case "real_name":
@@ -406,7 +405,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                     name.remove(at: name.startIndex)
 //                    name.characters.dropFirst(1)
 //                    print(name)
-                    value == "" ? (localEa.append("")) : (localEa = "<extension_attribute><name>\(name)</name><value>\(newValue)</value></extension_attribute>")
+                    value == "" ? (localEa.append("")) : (localEa.append("<extension_attribute><name>\(name)</name><value>\(newValue)</value></extension_attribute>"))
                 }
             }
         }
@@ -423,7 +422,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             "</extension_attributes>" +
         "</\(localDevice)>"
         
-        print("generatedXml: \(generatedXml)")
+//        print("generatedXml: \(generatedXml)")
         return "\(generatedXml)"
     }
     
@@ -459,7 +458,7 @@ class ViewController: NSViewController, URLSessionDelegate {
 //                self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
                 (backupResult: Bool) in
                 
-                print("returned from backup: \(Uid)")
+//                print("returned from backup: \(Uid)")
                 
                 if action == "PUT" {
                     request.httpMethod = "PUT"
@@ -475,14 +474,14 @@ class ViewController: NSViewController, URLSessionDelegate {
                     if let httpResponse = response as? HTTPURLResponse {
                         //print(httpResponse.statusCode)
                         //print(httpResponse)
-                        print("POST XML-endpointType: \(self.deviceType)")
+//                        print("POST XML-endpointType: \(self.deviceType)")
                         DispatchQueue.main.async {
                             // http succeeded
                         }
 
                         if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
                             print("\n\n---------- Success ----------")
-                            print("\(encodedXML!)")
+                            print("\(endpointXML)")
                             print("---------- Success ----------")
                             completion(true)
                         } else {
@@ -491,7 +490,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                             // 409 - unable to create object; already exists or data missing or xml error
                             print("httpResponse: \(httpResponse)")
                             print("statusCode: \(httpResponse.statusCode)")
-                            print("\(encodedXML!)")
+                            print("\(endpointXML)")
                             completion(false)
                         }
                     }
@@ -551,8 +550,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                 let serverRequest = NSMutableURLRequest(url: serverEncodedURL! as URL)
                 //            print("serverRequest: \(serverRequest)")
                 serverRequest.httpMethod = "GET"
-                print("getting: \(deviceUrl)")
-                
+//                print("getting: \(deviceUrl)")
+            
                 let configuration = URLSessionConfiguration.default
                 configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Accept" : "application/json"]
                 //            fn_request.httpBody = encodedXML!
@@ -570,7 +569,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                 if let endpointJSON = json as? [String: Any] {
                                     switch fn_deviceType {
                                     case "computers":
-                                        print("computer case")
+//                                        print("computer case")
                                         fn_fullRecordDict = endpointJSON["computer"] as! [String:Any]
                                         // general info
                                         fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
@@ -602,7 +601,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         
                                     // default is iOS
                                     default:
-                                        print("iOS case")
+//                                        print("iOS case")
                                         fn_fullRecordDict = endpointJSON["mobile_device"] as! [String:Any]
                                         // general info
                                         fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
@@ -673,8 +672,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                                 getResult = true
                             } else {
                                 // something failed
-                                print("httpResponse[failed]: \(httpResponse)")
-                                print("statusCode[failed]: \(httpResponse.statusCode)")
+                                print("httpResponse[backupQ failed]: \(httpResponse)")
+                                print("statusCode[backupQ failed]: \(httpResponse.statusCode)")
                                 getResult = false
                             }
                         }
