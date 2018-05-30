@@ -122,19 +122,9 @@ class PreviewController: NSViewController, URLSessionDelegate {
                 self.addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
                 self.addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
                 self.addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
-//                "<tr>" +
-//                "<td style=\"text-align:right\">Department:</td>" +
-//
-//                "<td>\(existingValuesDict["department"] ?? "")</td>" +
-//                "<td>\(department)</td>" +
-//                "</tr>" +
+
                 self.addEaToTable(updateValues: self.prevAllRecordValuesArray[recordNumber]) +
-//                "<tr>" +
-//                "<td style=\"text-align:left\">Extension Attributes</td>" +
-//                
-//                
-//                
-//                "</tr>" +
+
                 "</table>" +
                 "</body>" +
             "</html>"
@@ -277,12 +267,6 @@ class PreviewController: NSViewController, URLSessionDelegate {
                     "</tr>"
             for (key, value) in currentEaValuesDict {
                 let _key = "_" + key.lowercased()
-//                let newLine = "<tr>" +
-//                    "<td style=\"text-align:right\">" + key + ":</td>" +
-//
-//                    "<td>\(value)</td>" +
-//                    "<td>\(updateValues[_key] ?? "")</td>" +
-//                "</tr>"
                 let newLine = addTableRow(attribute: key, existing: value, update: updateValues[_key] as! String)
                 EaString.append(newLine)
             }
