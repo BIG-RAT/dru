@@ -6,7 +6,7 @@ Provides the option to back-up a device record before updating it.  Note this is
 Preview potential changes before committing them.  Attributes that will change are identified by yellow text, blue text identifies a newly added value, and red indicates a value is getting deleted.  To remove the value of an attribute enter a space as the value, leaving the value blank will leave the attribute value unchanged.
 
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.preview.png "Preview")
-Note: only attributes that have a value or have a value being set are displayed.
+Note: only attributes that have a value or have a value being set are displayed.  Sites are an exception to this rule.
 
 A header row is required in the data file.  A template can be created from the file menu:
 
