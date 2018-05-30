@@ -277,12 +277,13 @@ class PreviewController: NSViewController, URLSessionDelegate {
                     "</tr>"
             for (key, value) in currentEaValuesDict {
                 let _key = "_" + key.lowercased()
-                let newLine = "<tr>" +
-                    "<td style=\"text-align:right\">" + key + ":</td>" +
-                    
-                    "<td>\(value)</td>" +
-                    "<td>\(updateValues[_key] ?? "")</td>" +
-                "</tr>"
+//                let newLine = "<tr>" +
+//                    "<td style=\"text-align:right\">" + key + ":</td>" +
+//
+//                    "<td>\(value)</td>" +
+//                    "<td>\(updateValues[_key] ?? "")</td>" +
+//                "</tr>"
+                let newLine = addTableRow(attribute: key, existing: value, update: updateValues[_key] as! String)
                 EaString.append(newLine)
             }
         }
