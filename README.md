@@ -21,6 +21,7 @@ The application will look for known headers; computer name, display name, serial
 Currently updates are based on serial number, that being the only required data field (column).
 
 **To Do:**
+* Logging.
 * Better formatting of the preview page.
 * preference file.
 * More error checking.
