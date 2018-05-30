@@ -16,11 +16,11 @@ The application will look for known headers; computer name, display name, serial
 Currently updates are based on serial number, that being the only required data field (column).
 
 **To Do:**
-*Better formatting.
-*More error checking.
-*Add update button to preview field, to test updating the previewed device.
-*Batter way to clear attribute value(s).
-*Help file.
-*Add device creation?
-*Ability to match off an attribute other than serial number.
-*Ability to use a delimiter other than a comma.
+* Better formatting.
+* More error checking.
+* Add update button to preview field, to test updating the previewed device.
+* Batter way to clear attribute value(s).
+* Help file.
+* Add device creation?
+* Ability to match off an attribute other than serial number.
+* Ability to use a delimiter other than a comma.
