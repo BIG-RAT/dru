@@ -5,9 +5,9 @@ Provides the option to back-up a device record before updating it.  Note this is
 
 Preview potential changes before committing them.
 Colors are used to help identify changes in an attribute value:
-*   blue - adding a value.
+* blue - adding a value.
 * yellow - changing an existing value.
-*    red - removing an existing value.
+* red - removing an existing value.
 
 To remove the value of an attribute enter a space as the value, leaving the value blank will leave the attribute value unchanged.
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.preview.png "Preview")
