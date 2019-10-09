@@ -189,7 +189,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
                                 for i in (0..<self.extAttributesDict.count) {
                                     let EaName = self.extAttributesDict[i]["name"] as! String
                                     let EaValue = self.extAttributesDict[i]["value"]
-                                    if self.prevLowercaseEaHeaderArray.index(of: (EaName.lowercased())) != nil {
+                                    if self.prevLowercaseEaHeaderArray.firstIndex(of: (EaName.lowercased())) != nil {
                                         self.currentEaValuesDict[EaName] = "\(EaValue ?? "")"
                                     }
 //                                    self.lowercaseEaValuesDict[EaName.lowercased()] = EaName
@@ -225,7 +225,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
                                 for i in (0..<self.extAttributesDict.count) {
                                     let EaName = self.extAttributesDict[i]["name"] as! String
                                     let EaValue = self.extAttributesDict[i]["value"]
-                                    if self.prevLowercaseEaHeaderArray.index(of: (EaName.lowercased())) != nil {
+                                    if self.prevLowercaseEaHeaderArray.firstIndex(of: (EaName.lowercased())) != nil {
                                         self.currentEaValuesDict[EaName] = "\(EaValue ?? "")"
                                     }
 //                                    self.lowercaseEaValuesDict[EaName.lowercased()] = EaName

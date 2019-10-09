@@ -48,7 +48,10 @@ class ViewController: NSViewController, URLSessionDelegate {
     var deviceType      = ""
     var recordId        = "serialnumber"
     var backupBtnState  = 1 // 1 - backup before updating, 0 - no backup
+    var attributeArray  = [String]()
     var createdBackup   = false
+    
+    @IBOutlet weak var fileOrDir_TextField: NSTextField!
     
     var dataArray       = [String]()
 
@@ -57,7 +60,9 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     var firstDataLine = 0
     let headerArray = [String]()
-    let knownHeadersArray = ["computer name", "display name", "serial number", "serial_number", "udid", "asset tag", "asset_tag", "full name", "username", "email address", "email_address", "building", "department","position", "room", "phone number", "user phone number", "device phone number", "phone", "site"]
+    let knownHeadersArray = ["computer name", "display name", "serial number", "serial_number", "udid", "asset tag", "asset_tag", "full name",
+                             "username", "email address", "email_address", "building", "department","position", "room", "phone number",
+                             "user phone number", "device phone number", "phone", "site"]
     var safeHeaderArray = [String]()    // array for built in attributes
     var safeEaHeaderArray = [String]()  // array for extension attributes
     var headerCount = 0
@@ -76,6 +81,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     var allRecordValuesArray = [[String:String]]()
     var theKey = ""
     // computer record values - end
+    var allXmlFilesArray = [String]()
     
     let fm = FileManager.default
     var format = PropertyListSerialization.PropertyListFormat.xml //format of the property list
@@ -100,80 +106,112 @@ class ViewController: NSViewController, URLSessionDelegate {
         safeEaHeaderArray.removeAll()
         theLineArray.removeAll()
         allRecordValuesArray.removeAll()
+        allXmlFilesArray.removeAll()
         // parse header row, change lowercase start
         
         if let pathToFile = dataFile_PathControl.url {
-            do {
-                let dataFile =  try Data(contentsOf:pathToFile)
-                let attibutedString = try NSAttributedString(data: dataFile, documentAttributes: nil)
-                let fileText = attibutedString.string
-                let allLines = fileText.components(separatedBy: CharacterSet.newlines)
-                // create header array - start
-                if hasHeader_Button.state.rawValue == 1 {
-                    var safeHeaderIndex = 0
-                    var safeEaHeaderIndex = 0
-                    let headerArray = createFieldArray(theString: allLines[0])
-                    firstDataLine = 1
-                    headerCount = headerArray.count
-//                    print("headerArray: \(headerArray)")
-//                    print("headerCount: \(headerArray.count)")
-                    for i in 0..<headerCount {
-                        if knownHeadersArray.index(of: (headerArray[i] ).lowercased()) != nil {
-                            let lowercaseHeader = "\(headerArray[i] )".lowercased()
-                            safeHeaderArray.append(lowercaseHeader)
-                            switch lowercaseHeader {
-                            case "computer name", "display name":
-                                safeHeaderArray[safeHeaderIndex] = "deviceName"
-                            case "serial number":
-                                safeHeaderArray[safeHeaderIndex] = "serial_number"
-                            case "asset tag":
-                                safeHeaderArray[safeHeaderIndex] = "asset_tag"
-                            case "site":
-                                safeHeaderArray[safeHeaderIndex] = "siteName"
-                            case "full name":
-                                safeHeaderArray[safeHeaderIndex] = "real_name"
-                            case "email address":
-                                safeHeaderArray[safeHeaderIndex] = "email_address"
-                            case "phone number", "user phone number":
-                                safeHeaderArray[safeHeaderIndex] = "phone_number"
-                            default: break
-                                // all good
+            let objPath: URL!
+            if let pathOrDirectory = dataFile_PathControl.url {
+                print("fileOrPath: \(pathOrDirectory)")
+                
+                objPath = URL(string: "\(pathOrDirectory)")!
+                    var isDir : ObjCBool = false
+                    self.fileOrDir_TextField.stringValue = "--------"
+                    sleep(2)
+                    _ = self.fm.fileExists(atPath: objPath.path, isDirectory:&isDir)
+                    if isDir.boolValue {
+                        self.fileOrDir_TextField.stringValue = "directory"
+                        do {
+                            let xmlFiles = try self.fm.contentsOfDirectory(atPath: objPath.path)
+                            for xmlFile in xmlFiles {
+                                let xmlFilePath: String = "\(objPath.path)\(xmlFile)"
+                                allXmlFilesArray.append(xmlFilePath)
                             }
-                            safeHeaderIndex += 1
-                        } else {
-                            // load extension attribute headers - start
-                            let lowercaseEaHeader = "\(headerArray[i] )".lowercased()
-                            safeEaHeaderArray.append(lowercaseEaHeader)
-                            safeHeaderArray.append("_" + lowercaseEaHeader)
-//                            safeEaHeaderArray.append((headerArray[i] as AnyObject).lowercased)
-//                            safeHeaderArray.append("_" + (headerArray[i] as AnyObject).lowercased)
-                            safeHeaderIndex += 1
-                            safeEaHeaderIndex += 1
-                            // load extension attribute headers - end
+                            self.totalRecords = self.allXmlFilesArray.count
+                        } catch {
+                            self.alert_dialog("Warning", message: "Error reading directory")
+                            return
                         }
+                    } else {
+                        self.fileOrDir_TextField.stringValue = "file"
+                        do {
+                            let dataFile =  try Data(contentsOf:pathToFile)
+                            let attibutedString = try NSAttributedString(data: dataFile, documentAttributes: nil)
+                            let fileText = attibutedString.string
+                            let allLines = fileText.components(separatedBy: CharacterSet.newlines)
+                            // create header array - start
+                            if self.hasHeader_Button.state.rawValue == 1 {
+                                var safeHeaderIndex = 0
+                                var safeEaHeaderIndex = 0
+                                let headerArray = self.createFieldArray(theString: allLines[0])
+                                self.firstDataLine = 1
+                                self.headerCount = headerArray.count
+                                //                    print("headerArray: \(headerArray)")
+                                //                    print("headerCount: \(headerArray.count)")
+                                for i in 0..<self.headerCount {
+                                    if self.knownHeadersArray.firstIndex(of: (headerArray[i] ).lowercased()) != nil {
+                                        let lowercaseHeader = "\(headerArray[i] )".lowercased()
+                                        self.safeHeaderArray.append(lowercaseHeader)
+                                        switch lowercaseHeader {
+                                        case "computer name", "display name":
+                                            self.safeHeaderArray[safeHeaderIndex] = "deviceName"
+                                        case "serial number":
+                                            self.safeHeaderArray[safeHeaderIndex] = "serial_number"
+                                        case "asset tag":
+                                            self.safeHeaderArray[safeHeaderIndex] = "asset_tag"
+                                        case "site":
+                                            self.safeHeaderArray[safeHeaderIndex] = "siteName"
+                                        case "full name":
+                                            self.safeHeaderArray[safeHeaderIndex] = "real_name"
+                                        case "email address":
+                                            self.safeHeaderArray[safeHeaderIndex] = "email_address"
+                                        case "phone number", "user phone number":
+                                            self.safeHeaderArray[safeHeaderIndex] = "phone_number"
+                                        default: break
+                                            // all good
+                                        }
+                                        safeHeaderIndex += 1
+                                    } else {
+                                        // load extension attribute headers - start
+                                        let lowercaseEaHeader = "\(headerArray[i] )".lowercased()
+                                        self.safeEaHeaderArray.append(lowercaseEaHeader)
+                                        self.safeHeaderArray.append("_" + lowercaseEaHeader)
+                                        //                            safeEaHeaderArray.append((headerArray[i] as AnyObject).lowercased)
+                                        //                            safeHeaderArray.append("_" + (headerArray[i] as AnyObject).lowercased)
+                                        safeHeaderIndex += 1
+                                        safeEaHeaderIndex += 1
+                                        // load extension attribute headers - end
+                                    }
+                                }
+                                //                    print("Built in Headers: \(safeHeaderArray)")
+                                //                    print("EA Headers: \(safeEaHeaderArray)")
+                            }
+                            // create header array - end
+                            if self.safeHeaderArray.count == 0 {
+                                self.alert_dialog("Warning", message: "Unable to identify any headers!")
+                                return
+                            }
+                            // parse data - start
+                            for i in self.firstDataLine..<allLines.count {
+                                if allLines[i] != "" {
+                                    print("\(i): \(allLines[i])")
+                                    self.allRecordValuesArray.append(self.xml(headerArray: self.safeHeaderArray , dataArray: self.createFieldArray(theString: allLines[i])))
+                                }
+                            }
+                            // parse data - end
+                            //                print("data: \(allRecordValuesArray)")
+                        } catch {
+                            print("file read error")
+                            return
+                        }
+                        self.totalRecords = self.allRecordValuesArray.count
                     }
-//                    print("Built in Headers: \(safeHeaderArray)")
-//                    print("EA Headers: \(safeEaHeaderArray)")
-                }
-                // create header array - end
-                if safeHeaderArray.count == 0 {
-                    alert_dialog("Warning", message: "Unable to identify any headers!")
-                    return
-                }
-                // parse data - start
-                for i in firstDataLine..<allLines.count {
-                    if allLines[i] != "" {
-                        allRecordValuesArray.append(xml(headerArray: safeHeaderArray , dataArray: createFieldArray(theString: allLines[i])))
-                    }
-                }
-                // parse data - end
-//                print("data: \(allRecordValuesArray)")
-            } catch {
-                print("file read error")
+             
             }
+            
+
         }
         
-        totalRecords = allRecordValuesArray.count
         self.updateCounts(remaining: totalRecords, updated: 0, created: 0, failed: 0)
     }
     
@@ -249,8 +287,8 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     // for preview window
     @IBAction func showPreviewWindow(_ sender: AnyObject) {
-        let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
-        let previewWindowController = storyboard.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier(rawValue: "Preview Window Controller")) as! NSWindowController
+        let storyboard = NSStoryboard(name: "Main", bundle: nil)
+        let previewWindowController = storyboard.instantiateController(withIdentifier: "Preview Window Controller") as! NSWindowController
         if let previewWindow = previewWindowController.window {
 //            let previewViewController = previewWindow.contentViewController as! PreviewViewController
             let application = NSApplication.shared
@@ -342,8 +380,9 @@ class ViewController: NSViewController, URLSessionDelegate {
         
         //safeHeaderArray.contains(xmlKey) ? (theValue = dataArray[safeHeaderArray.index(of: xmlKey)] as! String) : (theValue = "")
         if safeHeaderArray.contains(xmlKey) {
-            if safeHeaderArray.index(of: xmlKey)! < dataArray.count {
-                theValue = dataArray[safeHeaderArray.index(of: xmlKey)!]
+            if safeHeaderArray.firstIndex(of: xmlKey)! < dataArray.count {
+                theValue = dataArray[safeHeaderArray.firstIndex(of: xmlKey)!]
+                theValue = xmlEncode(rawString: "\(theValue)")
             }
         }
         return theValue
@@ -631,6 +670,15 @@ class ViewController: NSViewController, URLSessionDelegate {
                                             fn_currentRecordDict[EaName] = (EaValue as! String)
                                         }
                                     }   // switch - end
+                                    
+                                    for (key, value) in fn_currentRecordDict {
+                                        fn_currentRecordDict[key] = self.quoteCommaInField(field: value)
+                                        print("\(key): \(String(describing: fn_currentRecordDict[key]!))")
+                                        if self.attributeArray.count < fn_currentRecordDict.count {
+                                            self.attributeArray.append(key)
+                                        }
+                                    }
+                                    
                                     if self.writeHeader {
                                         for (tag, _) in fn_currentRecordDict {
                                             switch tag {
@@ -653,8 +701,10 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         recordText = ""
                                         self.writeHeader = false
                                     }
-                                    for (_, value) in fn_currentRecordDict {
-                                        recordText.append(value + ",")
+                                   // for (_, value) in fn_currentRecordDict {
+                                    for attribute in self.attributeArray {
+//                                        recordText.append(value + ",")
+                                        recordText.append("\(String(describing: fn_currentRecordDict[attribute]!))" + ",")
                                     }
     //                                recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
                                     recordText = String(recordText[..<recordText.endIndex])
@@ -692,6 +742,14 @@ class ViewController: NSViewController, URLSessionDelegate {
             completion(true)
         }
         
+    }
+    
+    func quoteCommaInField(field: String) -> String {
+        var newValue = field
+        if field.contains(",") {
+            newValue = "\"\(field)\""
+        }
+        return newValue
     }
     
     func createFileFolder(itemPath: String, objectType: String) {
@@ -748,6 +806,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     }
     
     func updateCounts(remaining: Int, updated: Int, created: Int, failed: Int) {
+//        print("remaining: \(remaining) \n updated: \(updated)\n created: \(created)\n failed: \(failed)")
         DispatchQueue.main.async {
             //self.mySpinner_ImageView.rotate(byDegrees: CGFloat(self.deg))
             self.remaining_TextField.stringValue = "\(remaining)"
@@ -755,7 +814,8 @@ class ViewController: NSViewController, URLSessionDelegate {
             self.failed_TextField.stringValue = "\(failed)"
             if remaining == 0 {
                 self.backupFileHandle?.closeFile()
-                self.createdBackup = false
+                self.createdBackup  = false
+                self.attributeArray = [String]()
             }
         }
     }
@@ -764,6 +824,16 @@ class ViewController: NSViewController, URLSessionDelegate {
         self.backupFileHandle?.seekToEndOfFile()
         let recordText = (stringOfText as NSString).data(using: String.Encoding.utf8.rawValue)
         self.backupFileHandle?.write(recordText!)
+    }
+    
+    func xmlEncode(rawString: String) -> String {
+        var encodedString = rawString
+        encodedString = encodedString.replacingOccurrences(of: "&", with: "&amp;")
+        encodedString = encodedString.replacingOccurrences(of: "\"", with: "&quot;")
+        encodedString = encodedString.replacingOccurrences(of: "'", with: "&apos;")
+        encodedString = encodedString.replacingOccurrences(of: ">", with: "&gt;")
+        encodedString = encodedString.replacingOccurrences(of: "<", with: "&lt;")
+        return encodedString
     }
     
     override var representedObject: Any? {
