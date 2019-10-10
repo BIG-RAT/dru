@@ -1,7 +1,7 @@
 # Device Record Updater (dru)
 Update multiple attributes on either iOS or MacOS devices.
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.png "Device Record Updater")
-Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Application Support/dru/backups``` and can be dropped back into the app to restore values.
+Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Containers/com.jamf.pse.dru2/Data/Library/Application\ Support/dru/backups``` and can be dropped back into the app to restore values.
 
 Preview potential changes before committing them.
 Colors are used to help identify changes in an attribute value:
