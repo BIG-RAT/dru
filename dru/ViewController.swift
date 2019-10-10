@@ -128,16 +128,15 @@ class ViewController: NSViewController, URLSessionDelegate {
         allRecordValuesArray.removeAll()
         allXmlFilesArray.removeAll()
         // parse header row, change lowercase start
-        
-        if let pathToFile = dataFile_PathControl.url {
-            let objPath: URL!
-            if let pathOrDirectory = dataFile_PathControl.url {
-                print("fileOrPath: \(pathOrDirectory)")
-                
-                objPath = URL(string: "\(pathOrDirectory)")!
+            if let pathToFile = self.dataFile_PathControl.url {
+                let objPath: URL!
+                if let pathOrDirectory = self.dataFile_PathControl.url {
+                    print("fileOrPath: \(pathOrDirectory)")
+                    
+                    objPath = URL(string: "\(pathOrDirectory)")!
                     var isDir : ObjCBool = false
                     self.fileOrDir_TextField.stringValue = "--------"
-                    sleep(2)
+                    sleep(1)
                     _ = self.fm.fileExists(atPath: objPath.path, isDirectory:&isDir)
                     if isDir.boolValue {
                         self.fileOrDir_TextField.stringValue = "directory"
@@ -145,7 +144,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                             let xmlFiles = try self.fm.contentsOfDirectory(atPath: objPath.path)
                             for xmlFile in xmlFiles {
                                 let xmlFilePath: String = "\(objPath.path)\(xmlFile)"
-                                allXmlFilesArray.append(xmlFilePath)
+                                self.allXmlFilesArray.append(xmlFilePath)
                             }
                             self.totalRecords = self.allXmlFilesArray.count
                         } catch {
@@ -214,7 +213,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                             // parse data - start
                             for i in self.firstDataLine..<allLines.count {
                                 if allLines[i] != "" {
-//                                    print("\(i): \(allLines[i])")
+                                    //                                    print("\(i): \(allLines[i])")
                                     self.allRecordValuesArray.append(self.xml(headerArray: self.safeHeaderArray , dataArray: self.createFieldArray(theString: allLines[i])))
                                 }
                             }
@@ -226,13 +225,14 @@ class ViewController: NSViewController, URLSessionDelegate {
                         }
                         self.totalRecords = self.allRecordValuesArray.count
                     }
-             
+                    
+                }
+                
+                
             }
-            
-
+        DispatchQueue.main.async {
+            self.updateCounts(remaining: self.totalRecords, updated: 0, created: 0, failed: 0)
         }
-        
-        self.updateCounts(remaining: totalRecords, updated: 0, created: 0, failed: 0)
     }
     
     

@@ -79,12 +79,13 @@ class PreviewController: NSViewController, URLSessionDelegate {
             (result: Dictionary) in
 //            print("result: \(result)")
             let existingValuesDict = result
-//            print("bundle path: \(Bundle.main.bundlePath)")
+//            print("bundle path: \(Bundle.main.bundlePath)") 
+            // old background: #619CC7
             self.previewPage = "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
                 "<style>" +
-                "body { color: white; background-color: #619CC7; }" +
+                "body { color: white; background-color: #2F4254; }" +
                 "table, th, td {" +
                 "border: 0px solid black;padding-right: 3px;" +
                 "}" +
