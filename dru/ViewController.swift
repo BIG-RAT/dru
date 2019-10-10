@@ -51,6 +51,10 @@ class ViewController: NSViewController, URLSessionDelegate {
     var attributeArray  = [String]()
     var createdBackup   = false
     
+    @IBOutlet weak var siteConnectionStatus_ImageView: NSImageView!
+    let statusImage:[NSImage] = [NSImage(named: "red-dot")!,
+                                 NSImage(named: "green-dot")!]
+    
     @IBOutlet weak var fileOrDir_TextField: NSTextField!
     
     var dataArray       = [String]()
@@ -93,11 +97,27 @@ class ViewController: NSViewController, URLSessionDelegate {
     var backupFileHandle = FileHandle(forUpdatingAtPath: "")
     var writeHeader = true
     
+    let userDefaults = UserDefaults.standard
+    
     @IBAction func f_backupBtnState(_ sender: NSButton) {
         DispatchQueue.main.async {
             self.backupBtnState = self.backup_button.state.rawValue
         }
     }
+    
+    @IBAction func credentials_Action(_ sender: Any) {
+        
+        jssURL = jssURL_TextField.stringValue
+        userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+        userDefaults.synchronize()
+        
+        userName = userName_TextField.stringValue
+        userPass = userPass_TextField.stringValue
+        
+        
+        saveCreds(server: jssURL, username: userName, password: userPass)
+    }
+    
     
     @IBAction func loadFile_PathControl(_ sender: NSPathControl) {
         
@@ -194,7 +214,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                             // parse data - start
                             for i in self.firstDataLine..<allLines.count {
                                 if allLines[i] != "" {
-                                    print("\(i): \(allLines[i])")
+//                                    print("\(i): \(allLines[i])")
                                     self.allRecordValuesArray.append(self.xml(headerArray: self.safeHeaderArray , dataArray: self.createFieldArray(theString: allLines[i])))
                                 }
                             }
@@ -218,6 +238,11 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     @IBAction func parseFile_Button(_ sender: Any) {
         if (sender as AnyObject).title == "Update" {
+            
+            // Fix - change this so it only writes an successful auth
+            userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+            
+            self.backupBtnState = self.backup_button.state.rawValue
             
             deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
             var successCount = 0
@@ -805,6 +830,37 @@ class ViewController: NSViewController, URLSessionDelegate {
         previewController.prevLowercaseEaHeaderArray = safeEaHeaderArray
     }
     
+    func saveCreds(server: String, username: String, password: String) {
+        var serverFqdn = ""
+        if ( server != "" && username != "" && password != "" ) {
+            
+            let urlRegex   = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
+            serverFqdn = urlRegex.stringByReplacingMatches(in: server, options: [], range: NSRange(0..<server.utf16.count), withTemplate: "")
+//            fqdn = "\(serverFqdn)"
+            
+            let b64creds = ("\(username):\(password)".data(using: .utf8)?.base64EncodedString())!
+            
+            // update the connection indicator for the site server
+            UapiCall().token(serverUrl: server, creds: b64creds) {
+                (returnedToken: String) in
+                if returnedToken != "" {
+                    print("authentication verified")
+                    DispatchQueue.main.async {
+                        self.siteConnectionStatus_ImageView.image = self.statusImage[1]
+                    }
+                    let tmpArray     = "\(serverFqdn)".split(separator: ":")
+                    let keychainFqdn = String(tmpArray[0])
+                    Credentials2().save(service: "dru: \(keychainFqdn)", account: username, data: password)
+                } else {
+                    print("authentication failed")
+                    DispatchQueue.main.async {
+                        self.siteConnectionStatus_ImageView.image = self.statusImage[0]
+                    }
+                }
+            } // UapiCall().token - end
+        }
+    }
+    
     func updateCounts(remaining: Int, updated: Int, created: Int, failed: Int) {
 //        print("remaining: \(remaining) \n updated: \(updated)\n created: \(created)\n failed: \(failed)")
         DispatchQueue.main.async {
@@ -868,6 +924,13 @@ class ViewController: NSViewController, URLSessionDelegate {
         // Create preference file if missing - end
         
         // read environment settings - start
+        if let _ = userDefaults.string(forKey: "jamfProURL") {
+            jssURL_TextField.stringValue = userDefaults.string(forKey: "jamfProURL")!
+//            select_button.selectItem(withTitle: defaultValue_TextField.stringValue)
+        } else {
+            jssURL_TextField.stringValue = "https://"
+        }
+        
         let plistXML = fm.contents(atPath: appSupportPath + "settings.plist")!
         do{
             plistData = try PropertyListSerialization.propertyList(from: plistXML,
@@ -878,9 +941,9 @@ class ViewController: NSViewController, URLSessionDelegate {
         catch{
             NSLog("Error reading plist: \(error), format: \(format)")
         }
-        if plistData["jamfProURL"] != nil {
-            jssURL_TextField.stringValue = plistData["jamfProURL"] as! String
-        }
+//        if plistData["jamfProURL"] != nil {
+//            jssURL_TextField.stringValue = plistData["jamfProURL"] as! String
+//        }
         if plistData["username"] != nil {
             userName_TextField.stringValue = plistData["username"] as! String
         }

@@ -618,7 +618,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" verticalCompressionResistancePriority="749" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cg0-Ca-fEK">
-                                <rect key="frame" x="61" y="304" width="150" height="17"/>
+                                <rect key="frame" x="60" y="304" width="150" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="JSS URL:" id="ABl-t3-N7C">
                                     <font key="font" metaFont="system"/>
@@ -627,21 +627,21 @@
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="71g-Hi-ScH">
-                                <rect key="frame" x="128" y="279" width="83" height="17"/>
+                                <rect key="frame" x="127" y="279" width="83" height="17"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="17" id="6yl-la-DI5"/>
                                     <constraint firstAttribute="width" constant="79" id="gQC-oy-GbV"/>
                                 </constraints>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Login Name:" id="4Df-a7-UHe">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Login Name:" id="4Df-a7-UHe">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="klZ-rQ-vfI">
-                                <rect key="frame" x="104" y="255" width="107" height="17"/>
+                                <rect key="frame" x="103" y="255" width="107" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Login Password:" id="cdf-w2-YP5">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Login Password:" id="cdf-w2-YP5">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -658,6 +658,9 @@
                                         <string>NSAllRomanInputSourcesLocaleIdentifier</string>
                                     </allowedInputSourceLocales>
                                 </secureTextFieldCell>
+                                <connections>
+                                    <action selector="credentials_Action:" target="XfG-lQ-9wD" id="iRI-GA-k0T"/>
+                                </connections>
                             </secureTextField>
                             <textField verticalHuggingPriority="750" ambiguous="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Zew-Ub-g4p">
                                 <rect key="frame" x="213" y="276" width="190" height="22"/>
@@ -669,6 +672,9 @@
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <action selector="credentials_Action:" target="XfG-lQ-9wD" id="SOP-Nw-JjB"/>
+                                </connections>
                             </textField>
                             <textField verticalHuggingPriority="750" ambiguous="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yvC-A8-i2W">
                                 <rect key="frame" x="213" y="302" width="424" height="22"/>
@@ -694,9 +700,9 @@
                                 </connections>
                             </pathControl>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sub-Zb-Bwi">
-                                <rect key="frame" x="57" y="220" width="154" height="17"/>
+                                <rect key="frame" x="139" y="220" width="71" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Data File or XML Folder:" id="Oph-IS-KTG">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Data File:" id="Oph-IS-KTG">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -786,6 +792,17 @@ DQ
                                     <action selector="parseFile_Button:" target="XfG-lQ-9wD" id="BRE-Ky-1wl"/>
                                 </connections>
                             </button>
+                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q7b-AP-Jlw">
+                                <rect key="frame" x="207" y="185" width="217" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Backup records before updating" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Uy-60-636">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="f_backupBtnState:" target="XfG-lQ-9wD" id="Shw-CM-eGW"/>
+                                </connections>
+                            </button>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fis-of-N8m">
                                 <rect key="frame" x="54" y="23" width="117" height="17"/>
                                 <constraints>
@@ -806,35 +823,29 @@ DQ
                                     <color key="backgroundColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hev-ed-YVD">
+                            <textField hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hev-ed-YVD">
                                 <rect key="frame" x="572" y="176" width="96" height="22"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" drawsBackground="YES" id="F9d-1i-AJu">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" enabled="NO" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" drawsBackground="YES" id="F9d-1i-AJu">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6X0-PQ-Lh7">
+                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6X0-PQ-Lh7">
                                 <rect key="frame" x="467" y="178" width="105" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="file or directory:" id="6ej-OG-pd4">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" title="file or directory:" id="6ej-OG-pd4">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q7b-AP-Jlw">
-                                <rect key="frame" x="207" y="185" width="217" height="18"/>
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q95-19-fCN">
+                                <rect key="frame" x="134" y="306" width="12" height="12"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="Backup records before updating" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Uy-60-636">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="f_backupBtnState:" target="XfG-lQ-9wD" id="Shw-CM-eGW"/>
-                                </connections>
-                            </button>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="red-dot" id="DXD-Fq-5UA"/>
+                            </imageView>
                         </subviews>
                     </view>
                     <connections>
@@ -847,6 +858,7 @@ DQ
                         <outlet property="hasHeader_Button" destination="qb6-Nv-ao6" id="zDi-g5-kId"/>
                         <outlet property="jssURL_TextField" destination="yvC-A8-i2W" id="JrT-7L-WFh"/>
                         <outlet property="remaining_TextField" destination="Boc-nF-dIY" id="oAd-b3-IA8"/>
+                        <outlet property="siteConnectionStatus_ImageView" destination="Q95-19-fCN" id="tSa-zM-N8L"/>
                         <outlet property="spinner" destination="3ad-1z-AyC" id="H7g-cG-DMT"/>
                         <outlet property="updated_TextField" destination="7gJ-0t-qqQ" id="pIx-0N-Ub2"/>
                         <outlet property="userName_TextField" destination="Zew-Ub-g4p" id="FxH-b4-kO3"/>
@@ -922,4 +934,7 @@ DQ
             <point key="canvasLocation" x="222" y="1577"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="red-dot" width="66" height="66"/>
+    </resources>
 </document>

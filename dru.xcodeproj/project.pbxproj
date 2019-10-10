@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5106FCD234EB1C80076761D /* Credentials2.swift */; };
+		B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5106FCF234EC68C0076761D /* UapiCall.swift */; };
 		B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B543C78A1F3BDF8B0090227C /* PreviewController.swift */; };
 		B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20441F38E0F700C16EAA /* AppDelegate.swift */; };
 		B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20461F38E0F700C16EAA /* ViewController.swift */; };
@@ -16,6 +18,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B5106FCC234E75E70076761D /* dru.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dru.entitlements; sourceTree = "<group>"; };
+		B5106FCD234EB1C80076761D /* Credentials2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials2.swift; sourceTree = "<group>"; };
+		B5106FCF234EC68C0076761D /* UapiCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UapiCall.swift; sourceTree = "<group>"; };
 		B543C78A1F3BDF8B0090227C /* PreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewController.swift; sourceTree = "<group>"; };
 		B5AC20411F38E0F700C16EAA /* dru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5AC20441F38E0F700C16EAA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -56,9 +61,12 @@
 		B5AC20431F38E0F700C16EAA /* dru */ = {
 			isa = PBXGroup;
 			children = (
+				B5106FCC234E75E70076761D /* dru.entitlements */,
 				B5AC20441F38E0F700C16EAA /* AppDelegate.swift */,
-				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
+				B5106FCD234EB1C80076761D /* Credentials2.swift */,
 				B543C78A1F3BDF8B0090227C /* PreviewController.swift */,
+				B5106FCF234EC68C0076761D /* UapiCall.swift */,
+				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
 				B5AC20481F38E0F700C16EAA /* Assets.xcassets */,
 				B5AC204A1F38E0F700C16EAA /* Main.storyboard */,
 				B5AC204D1F38E0F700C16EAA /* Info.plist */,
@@ -102,6 +110,14 @@
 						DevelopmentTeam = PS2F6S478M;
 						LastSwiftMigration = 1020;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -142,7 +158,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */,
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
+				B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */,
 				B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */,
 				B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */,
 			);
@@ -276,8 +294,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dru/dru.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = PS2F6S478M;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru2;
@@ -290,8 +311,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dru/dru.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = PS2F6S478M;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru2;
