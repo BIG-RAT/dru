@@ -18,6 +18,8 @@ class ViewController: NSViewController, URLSessionDelegate {
     @IBOutlet weak var jssURL_TextField: NSTextField!
     @IBOutlet weak var userName_TextField: NSTextField!
     @IBOutlet weak var userPass_TextField: NSSecureTextField!
+    @IBOutlet weak var saveCreds_Button: NSButton!
+
     @IBOutlet weak var dataFile_PathControl: NSPathControl!
     @IBOutlet weak var spinner: NSProgressIndicator!
     @IBOutlet weak var hasHeader_Button: NSButtonCell!  // 0 - no header : 1 - header
@@ -113,8 +115,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         
         userName = userName_TextField.stringValue
         userPass = userPass_TextField.stringValue
-        
-        
+
         saveCreds(server: jssURL, username: userName, password: userPass)
     }
     
@@ -249,6 +250,9 @@ class ViewController: NSViewController, URLSessionDelegate {
             var failCount = 0
             var remaining = allRecordValuesArray.count
 
+            DispatchQueue.main.async {
+                self.spinner.startAnimation(self)
+            }
             switch deviceType {
             case "computers":
                 for i in 0..<allRecordValuesArray.count {
@@ -504,7 +508,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         DestURL = "\(jssURL)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
         DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
-        theUpdateQ.maxConcurrentOperationCount = 1
+        theUpdateQ.maxConcurrentOperationCount = 2
         let semaphore = DispatchSemaphore(value: 0)
         let encodedXML = endpointXML.data(using: String.Encoding.utf8)
         
@@ -777,6 +781,31 @@ class ViewController: NSViewController, URLSessionDelegate {
         return newValue
     }
     
+    func fetchCreds(url: String) {
+        let regexKey        = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
+        let credKey         = regexKey.stringByReplacingMatches(in: url, options: [], range: NSRange(0..<url.utf16.count), withTemplate: "")
+        
+        let tmpArray     = "\(credKey)".split(separator: ":")
+        let keychainFqdn = String(tmpArray[0])
+        
+        let credentailArray = Credentials2().retrieve(service: "dru - "+keychainFqdn)
+        
+        if credentailArray.count == 2 {
+            if (url != "") {
+                userName_TextField.stringValue = credentailArray[0]
+                userPass_TextField.stringValue = credentailArray[1]
+                credentials_Action(self)
+//                    self.storedSourceUser = credentailArray[0]
+            }   // if whichServer - end
+        } else {
+            // blank out username / password fields
+            userName_TextField.stringValue = ""
+            userPass_TextField.stringValue = ""
+//                self.storedSourceUser = ""
+//                source_user_field.becomeFirstResponder()
+        }
+    }
+    
     func createFileFolder(itemPath: String, objectType: String) {
         if !fm.fileExists(atPath: itemPath) {
 //          try to create backup directory
@@ -831,6 +860,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     }
     
     func saveCreds(server: String, username: String, password: String) {
+        
         var serverFqdn = ""
         if ( server != "" && username != "" && password != "" ) {
             
@@ -850,7 +880,10 @@ class ViewController: NSViewController, URLSessionDelegate {
                     }
                     let tmpArray     = "\(serverFqdn)".split(separator: ":")
                     let keychainFqdn = String(tmpArray[0])
-                    Credentials2().save(service: "dru: \(keychainFqdn)", account: username, data: password)
+                    
+                    if self.saveCreds_Button.state.rawValue == 1 {
+                        Credentials2().save(service: "dru - \(keychainFqdn)", account: username, data: password)
+                    }
                 } else {
                     print("authentication failed")
                     DispatchQueue.main.async {
@@ -872,6 +905,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                 self.backupFileHandle?.closeFile()
                 self.createdBackup  = false
                 self.attributeArray = [String]()
+                self.spinner.stopAnimation(self)
             }
         }
     }
@@ -926,6 +960,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         // read environment settings - start
         if let _ = userDefaults.string(forKey: "jamfProURL") {
             jssURL_TextField.stringValue = userDefaults.string(forKey: "jamfProURL")!
+            fetchCreds(url: userDefaults.string(forKey: "jamfProURL")!)
 //            select_button.selectItem(withTitle: defaultValue_TextField.stringValue)
         } else {
             jssURL_TextField.stringValue = "https://"
@@ -944,9 +979,9 @@ class ViewController: NSViewController, URLSessionDelegate {
 //        if plistData["jamfProURL"] != nil {
 //            jssURL_TextField.stringValue = plistData["jamfProURL"] as! String
 //        }
-        if plistData["username"] != nil {
-            userName_TextField.stringValue = plistData["username"] as! String
-        }
+//        if plistData["username"] != nil {
+//            userName_TextField.stringValue = plistData["username"] as! String
+//        }
         // read environment search settings - end
         
     }

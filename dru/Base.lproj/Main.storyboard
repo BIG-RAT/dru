@@ -556,6 +556,9 @@
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="692" height="346"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <userGuides>
+                            <userLayoutGuide location="212" affinity="minX"/>
+                        </userGuides>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GNr-1g-edS">
                                 <rect key="frame" x="51" y="81" width="117" height="17"/>
@@ -688,7 +691,7 @@
                                 </textFieldCell>
                             </textField>
                             <pathControl verticalHuggingPriority="750" fixedFrame="YES" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XSe-gU-E9H">
-                                <rect key="frame" x="210" y="215" width="356" height="26"/>
+                                <rect key="frame" x="210" y="181" width="356" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <pathCell key="cell" selectable="YES" editable="YES" alignment="left" pathStyle="popUp" id="BPf-FY-BGz">
                                     <font key="font" metaFont="system"/>
@@ -700,7 +703,7 @@
                                 </connections>
                             </pathControl>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sub-Zb-Bwi">
-                                <rect key="frame" x="139" y="220" width="71" height="17"/>
+                                <rect key="frame" x="139" y="186" width="71" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Data File:" id="Oph-IS-KTG">
                                     <font key="font" metaFont="system"/>
@@ -793,7 +796,7 @@ DQ
                                 </connections>
                             </button>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q7b-AP-Jlw">
-                                <rect key="frame" x="207" y="185" width="217" height="18"/>
+                                <rect key="frame" x="192" y="157" width="217" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="check" title="Backup records before updating" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Uy-60-636">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -824,7 +827,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hev-ed-YVD">
-                                <rect key="frame" x="572" y="176" width="96" height="22"/>
+                                <rect key="frame" x="572" y="142" width="96" height="22"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" enabled="NO" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" drawsBackground="YES" id="F9d-1i-AJu">
                                     <font key="font" metaFont="system"/>
@@ -833,7 +836,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6X0-PQ-Lh7">
-                                <rect key="frame" x="467" y="178" width="105" height="17"/>
+                                <rect key="frame" x="467" y="144" width="105" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" title="file or directory:" id="6ej-OG-pd4">
                                     <font key="font" metaFont="system"/>
@@ -846,6 +849,14 @@ DQ
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="red-dot" id="DXD-Fq-5UA"/>
                             </imageView>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZrE-18-6PQ">
+                                <rect key="frame" x="192" y="227" width="124" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Save Credentials" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="nHL-7k-VIt">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
                         </subviews>
                     </view>
                     <connections>
@@ -858,6 +869,7 @@ DQ
                         <outlet property="hasHeader_Button" destination="qb6-Nv-ao6" id="zDi-g5-kId"/>
                         <outlet property="jssURL_TextField" destination="yvC-A8-i2W" id="JrT-7L-WFh"/>
                         <outlet property="remaining_TextField" destination="Boc-nF-dIY" id="oAd-b3-IA8"/>
+                        <outlet property="saveCreds_Button" destination="ZrE-18-6PQ" id="Pmg-eI-nLQ"/>
                         <outlet property="siteConnectionStatus_ImageView" destination="Q95-19-fCN" id="tSa-zM-N8L"/>
                         <outlet property="spinner" destination="3ad-1z-AyC" id="H7g-cG-DMT"/>
                         <outlet property="updated_TextField" destination="7gJ-0t-qqQ" id="pIx-0N-Ub2"/>
