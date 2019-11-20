@@ -25,7 +25,7 @@ Currently updates are based on serial number, that being the only required data 
 * Better formatting of the preview page.
 * preference file.
 * More error checking.
-* Add update button to preview field, to test updating the previewed record.
+* ~Add update button to preview field, to test updating the previewed record~.
 * Batter way to clear attribute value(s).
 * Help file.
 * Add device creation?
