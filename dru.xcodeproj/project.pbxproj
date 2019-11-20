@@ -15,6 +15,7 @@
 		B5AC20491F38E0F700C16EAA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5AC20481F38E0F700C16EAA /* Assets.xcassets */; };
 		B5AC204C1F38E0F700C16EAA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5AC204A1F38E0F700C16EAA /* Main.storyboard */; };
 		B5B03C4E1F8172510018DB04 /* settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5B03C4D1F8172510018DB04 /* settings.plist */; };
+		B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F9E74A2385BB780095E9BC /* Globals.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		B5AC204B1F38E0F700C16EAA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5AC204D1F38E0F700C16EAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5B03C4D1F8172510018DB04 /* settings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = settings.plist; sourceTree = "<group>"; };
+		B5F9E74A2385BB780095E9BC /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 				B543C78A1F3BDF8B0090227C /* PreviewController.swift */,
 				B5106FCF234EC68C0076761D /* UapiCall.swift */,
 				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
+				B5F9E74A2385BB780095E9BC /* Globals.swift */,
 				B5AC20481F38E0F700C16EAA /* Assets.xcassets */,
 				B5AC204A1F38E0F700C16EAA /* Main.storyboard */,
 				B5AC204D1F38E0F700C16EAA /* Info.plist */,
@@ -160,6 +163,7 @@
 			files = (
 				B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */,
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
+				B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */,
 				B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */,
 				B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */,
 				B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */,

@@ -108,7 +108,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     }
     
     @IBAction func credentials_Action(_ sender: Any) {
-        
+    
         jssURL = jssURL_TextField.stringValue
         userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
         userDefaults.synchronize()
@@ -257,7 +257,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             case "computers":
                 for i in 0..<allRecordValuesArray.count {
                     let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                    let updateDeviceXml = "\(generateXml(localRecordDict: allRecordValuesArray[i]))"
+                    let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
 //                        print("valuesDict: \(allRecordValuesArray[i])")
 //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
 
@@ -280,7 +280,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             case "mobiledevices":
                 for i in 0..<allRecordValuesArray.count {
                     let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                    let updateDeviceXml = "\(generateXml(localRecordDict: allRecordValuesArray[i]))"
+                    let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
 //                  print("valuesDict: \(allRecordValuesArray[i])")
 //                  print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
                     
@@ -417,7 +417,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         return theValue
     }
     
-    func generateXml(localRecordDict: Dictionary<String, String>) -> String {
+    func generateXml(deviceType: String, localRecordDict: Dictionary<String, String>) -> String {
         var localDeviceName = ""
         var localAssetTag = ""
         var localSiteName = ""
@@ -477,7 +477,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                 }
             }
         }
-        self.deviceType == "computers" ? (localDevice = "computer") : (localDevice = "mobile_device")
+        deviceType == "computers" ? (localDevice = "computer") : (localDevice = "mobile_device")
         let generatedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<\(localDevice)><general>" +
             "\(localDeviceName)\(localAssetTag)\(localSiteName)" +
@@ -490,22 +490,23 @@ class ViewController: NSViewController, URLSessionDelegate {
             "</extension_attributes>" +
         "</\(localDevice)>"
         
-//        print("generatedXml: \(generatedXml)")
+        print("generatedXml: \(generatedXml)")
         return "\(generatedXml)"
     }
     
     func update(DeviceType: String, endpointXML: String, endpointCurrent: Int, endpointCount: Int, action: String, uniqueID: String, completion: @escaping (Bool) -> Bool) {
         // this is where we create the new endpoint
         let safeCharSet = CharacterSet.alphanumerics
-        jssURL = self.jssURL_TextField.stringValue
+//        jssURL = self.jssURL_TextField.stringValue
         var DestURL = ""
         let Uid = "\(uniqueID)".addingPercentEncoding(withAllowedCharacters: safeCharSet)!
         
-        let jamfCreds = "\(userName_TextField.stringValue):\(userPass_TextField.stringValue)"
-        let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
-        jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
-        
-        DestURL = "\(jssURL)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
+//        let jamfCreds = "\(userName_TextField.stringValue):\(userPass_TextField.stringValue)"
+//        let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
+//        jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
+
+//        DestURL = "\(jssURL)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
+        DestURL = "\(SourceServer.url)/JSSResource/\(DeviceType)/\(self.recordId)/\(Uid)"
         DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
         theUpdateQ.maxConcurrentOperationCount = 2
@@ -522,7 +523,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             
             // backup record here
-            self.backup(deviceUrl: DestURL, fn_deviceType: self.deviceType) {
+            self.backup(deviceUrl: DestURL, fn_deviceType: DeviceType) {
 //                self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
                 (backupResult: Bool) in
                 
@@ -534,7 +535,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                     request.httpMethod = "POST"
                 }
                 let configuration = URLSessionConfiguration.default
-                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
+//                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
+                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(SourceServer.creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
                 request.httpBody = encodedXML!
                 let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: OperationQueue.main)
                 let task = session.dataTask(with: request as URLRequest, completionHandler: {
@@ -621,7 +623,7 @@ class ViewController: NSViewController, URLSessionDelegate {
 //                print("getting: \(deviceUrl)")
             
                 let configuration = URLSessionConfiguration.default
-                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Accept" : "application/json"]
+                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(SourceServer.creds)", "Accept" : "application/json"]
                 //            fn_request.httpBody = encodedXML!
                 let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: OperationQueue.main)
             
@@ -702,7 +704,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                     
                                     for (key, value) in fn_currentRecordDict {
                                         fn_currentRecordDict[key] = self.quoteCommaInField(field: value)
-                                        print("\(key): \(String(describing: fn_currentRecordDict[key]!))")
+//                                        print("\(key): \(String(describing: fn_currentRecordDict[key]!))")
                                         if self.attributeArray.count < fn_currentRecordDict.count {
                                             self.attributeArray.append(key)
                                         }

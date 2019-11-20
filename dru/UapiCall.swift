@@ -122,6 +122,9 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
                     let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                     if let endpointJSON = json! as? Dictionary<String, Any> {
                         token = endpointJSON["token"] as! String
+                        SourceServer.url   = serverUrl
+                        SourceServer.creds = creds
+                        print("[UapiCall] creds: \(creds)")
                         completion(token)
                         return
                     } else {    // if let endpointJSON error

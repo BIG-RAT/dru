@@ -16,6 +16,10 @@ class PreviewController: NSViewController, URLSessionDelegate {
     var myQ = DispatchQueue(label: "com.jamf.current")
     
     @IBOutlet weak var webSpinner_ProgInd: NSProgressIndicator!
+    @IBOutlet weak var whichRecord_TextField: NSTextField!
+    @IBOutlet weak var goTo_TextField: NSTextField!
+    
+    let vc = ViewController()
     
     var newValues = String()
     var prevAllRecordValuesArray = [[String:String]]()
@@ -41,39 +45,121 @@ class PreviewController: NSViewController, URLSessionDelegate {
     var currentSerialnumber     = ""
     var currentDept             = ""
     
+    @IBAction func goTo_Action(_ sender: Any) {
+        DispatchQueue.main.async {
+            self.currentRecord = Int(self.goTo_TextField.stringValue) ?? 0
+            if self.currentRecord > 0 && self.currentRecord <= self.prevAllRecordValuesArray.count {
+                self.webSpinner_ProgInd.startAnimation(self)
+                self.currentRecord -= 1
+                self.generatePage(recordNumber: self.currentRecord)
+                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+            }
+        }
+    }
+    
     @IBAction func prevRecord_Button(_ sender: Any) {
-        currentRecord -= 1
-        currentRecord = (currentRecord < 0 ? prevAllRecordValuesArray.count-1:currentRecord)
-        generatePage(recordNumber: currentRecord)
+        DispatchQueue.main.async {
+            self.webSpinner_ProgInd.startAnimation(self)
+            self.goTo_TextField.stringValue = ""
+            self.currentRecord -= 1
+            self.currentRecord = (self.currentRecord < 0 ? self.prevAllRecordValuesArray.count-1:self.currentRecord)
+            self.generatePage(recordNumber: self.currentRecord)
+            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        }
     }
     
     @IBAction func nextRecord_Button(_ sender: Any) {
-        webSpinner_ProgInd.startAnimation(Any?.self)
-        currentRecord += 1
-        currentRecord = (currentRecord > prevAllRecordValuesArray.count-1 ? 0:currentRecord)
-        generatePage(recordNumber: currentRecord)
+        DispatchQueue.main.async {
+            self.webSpinner_ProgInd.startAnimation(self)
+            self.goTo_TextField.stringValue = ""
+            self.currentRecord += 1
+            self.currentRecord = (self.currentRecord > self.prevAllRecordValuesArray.count-1 ? 0:self.currentRecord)
+            self.generatePage(recordNumber: self.currentRecord)
+            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        }
     }
+    
+    @IBAction func update_Button(_ sender: Any) {
+        
+        DispatchQueue.main.async {
+            self.webSpinner_ProgInd.startAnimation(self)
+        }
+        switch self.previewDeviceType {
+        case "computers":
+                let Uid = "\(prevAllRecordValuesArray[currentRecord]["serial_number"] ?? "")"
+                let updateDeviceXml = "\(vc.generateXml(deviceType: "computers", localRecordDict: prevAllRecordValuesArray[currentRecord]))"
+                print("currentRecord: \(currentRecord)\nvaluesDict: \(prevAllRecordValuesArray[currentRecord])")
+                //                    print("generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
+                
+                //                        send API command/data
+                vc.update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                    (result: Bool) in
+                    //                        print("result: \(result)")
+                    if result {
+//                        successCount += 1
+                        //                            print("successCount: \(successCount)\n")
+                    } else {
+//                        failCount += 1
+                        //                            print("failCount: \(failCount)\n")
+                    }
+//                    remaining -= 1
+//                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                    self.webSpinner_ProgInd.stopAnimation(self)
+                    self.goTo_TextField.stringValue = "\(self.currentRecord+1)"
+                    self.goTo_Action(self)
+                    return true
+                }
+        case "mobiledevices":
+                let Uid = "\(prevAllRecordValuesArray[currentRecord]["serial_number"] ?? "")"
+                let updateDeviceXml = "\(vc.generateXml(deviceType: "mobiledevices", localRecordDict: prevAllRecordValuesArray[currentRecord]))"
+                //                  print("valuesDict: \(prevAllRecordValuesArray[currentRecord])")
+                //                  print("generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
+                
+                //                  send API command/data
+                vc.update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                    (result: Bool) in
+                    //                        print("result: \(result)")
+                    if result {
+//                        successCount += 1
+                        //                            print("sucessCount: \(successCount)\n")
+                    } else {
+//                        failCount += 1
+                        //                            print("failCount: \(failCount)\n")
+                    }
+//                    remaining -= 1
+//                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                    self.webSpinner_ProgInd.stopAnimation(self)
+                    return true
+                }
+        default:
+            break
+        }
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        webSpinner_ProgInd.startAnimation(Any.self)
+        webSpinner_ProgInd.startAnimation(self)
         generatePage(recordNumber: 0)
+        DispatchQueue.main.async {
+            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        }
     }
     
     func generatePage(recordNumber: Int) {
 //        print("present values: \(prevAllRecordValuesArray[recordNumber])")
-        let theDevice = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
+        let theDevice    = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
         let serialNumber = "\(prevAllRecordValuesArray[recordNumber]["serial_number"] ?? "")"
-        let assetTag = "\(prevAllRecordValuesArray[recordNumber]["asset_tag"] ?? "")"
-        let site = "\(prevAllRecordValuesArray[recordNumber]["siteName"] ?? "")"
-        let username = "\(prevAllRecordValuesArray[recordNumber]["username"] ?? "")"
-        let realname = "\(prevAllRecordValuesArray[recordNumber]["real_name"] ?? "")"
+        let assetTag     = "\(prevAllRecordValuesArray[recordNumber]["asset_tag"] ?? "")"
+        let site         = "\(prevAllRecordValuesArray[recordNumber]["siteName"] ?? "")"
+        let username     = "\(prevAllRecordValuesArray[recordNumber]["username"] ?? "")"
+        let realname     = "\(prevAllRecordValuesArray[recordNumber]["real_name"] ?? "")"
         let emailAddress = "\(prevAllRecordValuesArray[recordNumber]["email_address"] ?? "")"
-        let phoneNumber = "\(prevAllRecordValuesArray[recordNumber]["phone_number"] ?? "")"
-        let position = "\(prevAllRecordValuesArray[recordNumber]["position"] ?? "")"
-        let department = "\(prevAllRecordValuesArray[recordNumber]["department"] ?? "")"
-        let building = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
-        let room = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
+        let phoneNumber  = "\(prevAllRecordValuesArray[recordNumber]["phone_number"] ?? "")"
+        let position     = "\(prevAllRecordValuesArray[recordNumber]["position"] ?? "")"
+        let department   = "\(prevAllRecordValuesArray[recordNumber]["department"] ?? "")"
+        let building     = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
+        let room         = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
 
         getEndpoint(id: serialNumber) {
             (result: Dictionary) in
@@ -131,7 +217,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
             "</html>"
 //        print("new test: \(previewPage)")
             self.preview_WebView.loadHTMLString(self.previewPage, baseURL: nil)
-            self.webSpinner_ProgInd.stopAnimation(Any?.self)
+            self.webSpinner_ProgInd.stopAnimation(self)
             return [:]
         }
         
