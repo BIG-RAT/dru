@@ -5,7 +5,7 @@ Provides the option to back-up a device record before updating it.  Note this is
 
 Preview potential changes before committing them.
 Colors are used to help identify changes in an attribute value:
-* blue - adding a value.
+* aqua - adding a value.
 * yellow - changing an existing value.
 * red - removing an existing value.
 
