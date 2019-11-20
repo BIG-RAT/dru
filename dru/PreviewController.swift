@@ -372,7 +372,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
             if ((existing != "" && update != "") && (existing != update)) {
                 updateText = "<td style='color:yellow'>\(update)</td>"
             } else if (existing == "" && update != "") {
-                updateText = "<td style='color:blue'>\(update)</td>"
+                updateText = "<td style='color:aqua'>\(update)</td>"
             } else {
                 updateText = "<td>\(existing)</td>"
             }
