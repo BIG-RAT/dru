@@ -139,86 +139,104 @@ class PreviewController: NSViewController, URLSessionDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        webSpinner_ProgInd.startAnimation(self)
-        generatePage(recordNumber: 0)
-        DispatchQueue.main.async {
-            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
-        }
+//        DispatchQueue.main.async {
+//            self.dismiss(PreviewController.self)
+//        }
+        print("[PreviewController: viewDidLoad]")
+        self.view.window?.orderOut(self)
+//        if prevAllRecordValuesArray.count > 0 {
+            webSpinner_ProgInd.startAnimation(self)
+            generatePage(recordNumber: 0)
+            DispatchQueue.main.async {
+                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+            }
+//        } else {
+//            view.window?.close()
+//        }
     }
     
     func generatePage(recordNumber: Int) {
 //        print("present values: \(prevAllRecordValuesArray[recordNumber])")
-        let theDevice    = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
-        let serialNumber = "\(prevAllRecordValuesArray[recordNumber]["serial_number"] ?? "")"
-        let assetTag     = "\(prevAllRecordValuesArray[recordNumber]["asset_tag"] ?? "")"
-        let site         = "\(prevAllRecordValuesArray[recordNumber]["siteName"] ?? "")"
-        let username     = "\(prevAllRecordValuesArray[recordNumber]["username"] ?? "")"
-        let realname     = "\(prevAllRecordValuesArray[recordNumber]["real_name"] ?? "")"
-        let emailAddress = "\(prevAllRecordValuesArray[recordNumber]["email_address"] ?? "")"
-        let phoneNumber  = "\(prevAllRecordValuesArray[recordNumber]["phone_number"] ?? "")"
-        let position     = "\(prevAllRecordValuesArray[recordNumber]["position"] ?? "")"
-        let department   = "\(prevAllRecordValuesArray[recordNumber]["department"] ?? "")"
-        let building     = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
-        let room         = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
+        if prevAllRecordValuesArray.count > 0 {
+            let theDevice    = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
+            let serialNumber = "\(prevAllRecordValuesArray[recordNumber]["serial_number"] ?? "")"
+            let assetTag     = "\(prevAllRecordValuesArray[recordNumber]["asset_tag"] ?? "")"
+            let site         = "\(prevAllRecordValuesArray[recordNumber]["siteName"] ?? "")"
+            let username     = "\(prevAllRecordValuesArray[recordNumber]["username"] ?? "")"
+            let realname     = "\(prevAllRecordValuesArray[recordNumber]["real_name"] ?? "")"
+            let emailAddress = "\(prevAllRecordValuesArray[recordNumber]["email_address"] ?? "")"
+            let phoneNumber  = "\(prevAllRecordValuesArray[recordNumber]["phone_number"] ?? "")"
+            let position     = "\(prevAllRecordValuesArray[recordNumber]["position"] ?? "")"
+            let department   = "\(prevAllRecordValuesArray[recordNumber]["department"] ?? "")"
+            let building     = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
+            let room         = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
 
-        getEndpoint(id: serialNumber) {
-            (result: Dictionary) in
-//            print("result: \(result)")
-            let existingValuesDict = result
-//            print("bundle path: \(Bundle.main.bundlePath)") 
-            // old background: #619CC7
-            self.previewPage = "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<style>" +
-                "body { color: white; background-color: #2F4254; }" +
-                "table, th, td {" +
-                "border: 0px solid black;padding-right: 3px;" +
-                "}" +
-                "#table1 { border-collapse: collapse; table-layout: fixed; margin: auto; }" +
-                "th, td { border-bottom: 1px solid #4C7A9B; }" +    //#ddd
-//                "tr:nth-child(even) { background-color: #FFFFFF; }" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<table id='table1'>" +
-                "<tr>" +
-                "<th style='width: 26%'></th>" +
-                "<th style='text-align:left; width: 37%'>Current</th>" +
-                "<th style='text-align:left; width: 37%'>Update</th>" +
-                "</tr>" +
-                "<tr>" +
-                "<td style=\"text-align:right\">Device Name:</td>" +
-                
-                "<td>\(existingValuesDict["deviceName"] ?? "")</td>" +
-                "<td>\(theDevice)</td>" +
-                "</tr>" +
-                self.addTableRow(attribute: "Serial Number", existing: "\(existingValuesDict["serial_number"] ?? "")", update: "\(serialNumber)") +
-                self.addTableRow(attribute: "Asset Tag", existing: "\(existingValuesDict["asset_tag"] ?? "")", update: "\(assetTag)") +
-                "<tr>" +
-                "<td style=\"text-align:right\">Site:</td>" +
-                
-                "<td>\(existingValuesDict["siteName"] ?? "")</td>" +
-                "<td>\(site)</td>" +
-                "</tr>" +
-                self.addTableRow(attribute: "Username", existing: "\(existingValuesDict["username"] ?? "")", update: "\(username)") +
-                self.addTableRow(attribute: "Realname", existing: "\(existingValuesDict["real_name"] ?? "")", update: "\(realname)") +
-                self.addTableRow(attribute: "Email Address", existing: "\(existingValuesDict["email_address"] ?? "")", update: "\(emailAddress)") +
-                self.addTableRow(attribute: "Phone Number", existing: "\(existingValuesDict["phone_number"] ?? "")", update: "\(phoneNumber)") +
-                self.addTableRow(attribute: "Position", existing: "\(existingValuesDict["position"] ?? "")", update: "\(position)") +
-                self.addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
-                self.addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
-                self.addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
+            getEndpoint(id: serialNumber) {
+                (result: Dictionary) in
+    //            print("result: \(result)")
+                let existingValuesDict = result
+    //            print("bundle path: \(Bundle.main.bundlePath)")
+                // old background: #619CC7
+                self.previewPage = "<!DOCTYPE html>" +
+                    "<html>" +
+                    "<head>" +
+                    "<style>" +
+                    "body { color: white; background-color: #2F4254; }" +
+                    "table, th, td {" +
+                    "border: 0px solid black;padding-right: 3px;" +
+                    "}" +
+                    "#table1 { border-collapse: collapse; table-layout: fixed; margin: auto; }" +
+                    "th, td { border-bottom: 1px solid #4C7A9B; }" +    //#ddd
+    //                "tr:nth-child(even) { background-color: #FFFFFF; }" +
+                    "</style>" +
+                    "</head>" +
+                    "<body>" +
+                    "<table id='table1'>" +
+                    "<tr>" +
+                    "<th style='width: 26%'></th>" +
+                    "<th style='text-align:left; width: 37%'>Current</th>" +
+                    "<th style='text-align:left; width: 37%'>Update</th>" +
+                    "</tr>" +
+                    "<tr>" +
+                    "<td style=\"text-align:right\">Device Name:</td>" +
+                    
+                    "<td>\(existingValuesDict["deviceName"] ?? "")</td>" +
+                    "<td>\(theDevice)</td>" +
+                    "</tr>" +
+                    self.addTableRow(attribute: "Serial Number", existing: "\(existingValuesDict["serial_number"] ?? "")", update: "\(serialNumber)") +
+                    self.addTableRow(attribute: "Asset Tag", existing: "\(existingValuesDict["asset_tag"] ?? "")", update: "\(assetTag)") +
+                    "<tr>" +
+                    "<td style=\"text-align:right\">Site:</td>" +
+                    
+                    "<td>\(existingValuesDict["siteName"] ?? "")</td>" +
+                    "<td>\(site)</td>" +
+                    "</tr>" +
+                    self.addTableRow(attribute: "Username", existing: "\(existingValuesDict["username"] ?? "")", update: "\(username)") +
+                    self.addTableRow(attribute: "Realname", existing: "\(existingValuesDict["real_name"] ?? "")", update: "\(realname)") +
+                    self.addTableRow(attribute: "Email Address", existing: "\(existingValuesDict["email_address"] ?? "")", update: "\(emailAddress)") +
+                    self.addTableRow(attribute: "Phone Number", existing: "\(existingValuesDict["phone_number"] ?? "")", update: "\(phoneNumber)") +
+                    self.addTableRow(attribute: "Position", existing: "\(existingValuesDict["position"] ?? "")", update: "\(position)") +
+                    self.addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
+                    self.addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
+                    self.addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
 
-                self.addEaToTable(updateValues: self.prevAllRecordValuesArray[recordNumber]) +
+                    self.addEaToTable(updateValues: self.prevAllRecordValuesArray[recordNumber]) +
 
-                "</table>" +
-                "</body>" +
-            "</html>"
-//        print("new test: \(previewPage)")
-            self.preview_WebView.loadHTMLString(self.previewPage, baseURL: nil)
-            self.webSpinner_ProgInd.stopAnimation(self)
-            return [:]
+                    "</table>" +
+                    "</body>" +
+                "</html>"
+    //        print("new test: \(previewPage)")
+                self.preview_WebView.loadHTMLString(self.previewPage, baseURL: nil)
+                self.webSpinner_ProgInd.stopAnimation(self)
+                return [:]
+            }
+        } else {
+            ViewController().alert_dialog("Attention", message: "No records found to lookup.")
+            DispatchQueue.main.async {
+                self.view.window?.orderOut(self)
+                self.view.window?.close()
+            }
+//            return
         }
         
     }
