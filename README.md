@@ -1,5 +1,5 @@
 # Device Record Updater (dru)
-Update multiple attributes on either iOS or MacOS devices.
+Perform mass updates to multiple attributes on either iOS or MacOS device records stored on your Jamf Pro server.
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.png "Device Record Updater")
 Download: [dru](https://github.com/BIG-RAT/dru/releases/download/current/dru.zip)
 
