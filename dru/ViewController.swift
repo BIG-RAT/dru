@@ -239,6 +239,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     @IBAction func parseFile_Button(_ sender: Any) {
         if (sender as AnyObject).title == "Update" {
+            print("start to parse file and update.")
             
             // Fix - change this so it only writes an successful auth
             userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
@@ -258,7 +259,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                 for i in 0..<allRecordValuesArray.count {
                     let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
                     let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
-//                        print("valuesDict: \(allRecordValuesArray[i])")
+                        print("valuesDict: \(allRecordValuesArray[i])")
 //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
 
 //                        send API command/data
@@ -509,7 +510,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         DestURL = "\(SourceServer.url)/JSSResource/\(DeviceType)/\(self.recordId)/\(Uid)"
         DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
-        theUpdateQ.maxConcurrentOperationCount = 2
+        theUpdateQ.maxConcurrentOperationCount = 3
         let semaphore = DispatchSemaphore(value: 0)
         let encodedXML = endpointXML.data(using: String.Encoding.utf8)
         
