@@ -1,11 +1,13 @@
 # Device Record Updater (dru)
-Update multiple attributes on either iOS or MacOS devices.
+Perform mass updates to multiple attributes on either iOS or MacOS device records stored on your Jamf Pro server.
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.png "Device Record Updater")
-Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Application Support/dru/backups``` and can be dropped back into the app to restore values.
+Download: [dru](https://github.com/BIG-RAT/dru/releases/download/current/dru.zip)
+
+Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Containers/com.jamf.pse.dru2/Data/Library/Application\ Support/dru/backups``` and can be dropped back into the app to restore values.
 
 Preview potential changes before committing them.
 Colors are used to help identify changes in an attribute value:
-* blue - adding a value.
+* aqua - adding a value.
 * yellow - changing an existing value.
 * red - removing an existing value.
 
@@ -25,7 +27,11 @@ Currently updates are based on serial number, that being the only required data 
 * Better formatting of the preview page.
 * preference file.
 * More error checking.
+<<<<<<< HEAD
 * Add update button to preview field, to test updating the previewed record.
+=======
+* ~Add update button to preview field, to test updating the previewed record~.
+>>>>>>> 74aa1fdaec114ff78007f4339b4156f76f618135
 * Better way to clear attribute value(s).
 * Help file.
 * Add device creation?

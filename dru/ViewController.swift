@@ -241,6 +241,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         let buttonPressed = (sender as AnyObject)
         print("button pressed: \(buttonPressed)")
         if (sender as AnyObject).title == "Update" {
+<<<<<<< HEAD
             if totalRecords > 0 {
                             // Fix - change this so it only writes with a successful auth
                             userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
@@ -262,6 +263,30 @@ class ViewController: NSViewController, URLSessionDelegate {
                                     let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
                 //                        print("valuesDict: \(allRecordValuesArray[i])")
                 //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
+=======
+            print("start to parse file and update.")
+            
+            // Fix - change this so it only writes an successful auth
+            userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+            
+            self.backupBtnState = self.backup_button.state.rawValue
+            
+            deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+            var successCount = 0
+            var failCount = 0
+            var remaining = allRecordValuesArray.count
+
+            DispatchQueue.main.async {
+                self.spinner.startAnimation(self)
+            }
+            switch deviceType {
+            case "computers":
+                for i in 0..<allRecordValuesArray.count {
+                    let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                    let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
+                        print("valuesDict: \(allRecordValuesArray[i])")
+//                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
+>>>>>>> 74aa1fdaec114ff78007f4339b4156f76f618135
 
                 //                        send API command/data
                                     update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
@@ -515,7 +540,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         DestURL = "\(SourceServer.url)/JSSResource/\(DeviceType)/\(self.recordId)/\(Uid)"
         DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
-        theUpdateQ.maxConcurrentOperationCount = 2
+        theUpdateQ.maxConcurrentOperationCount = 3
         let semaphore = DispatchSemaphore(value: 0)
         let encodedXML = endpointXML.data(using: String.Encoding.utf8)
         
