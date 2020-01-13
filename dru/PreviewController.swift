@@ -129,6 +129,8 @@ class PreviewController: NSViewController, URLSessionDelegate {
 //                    remaining -= 1
 //                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
                     self.webSpinner_ProgInd.stopAnimation(self)
+                    self.goTo_TextField.stringValue = "\(self.currentRecord+1)"
+                    self.goTo_Action(self)
                     return true
                 }
         default:
