@@ -238,104 +238,77 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     
     @IBAction func parseFile_Button(_ sender: Any) {
-        let buttonPressed = (sender as AnyObject)
-        print("button pressed: \(buttonPressed)")
         if (sender as AnyObject).title == "Update" {
-<<<<<<< HEAD
             if totalRecords > 0 {
-                            // Fix - change this so it only writes with a successful auth
-                            userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
-                            
-                            self.backupBtnState = self.backup_button.state.rawValue
-                            
-                            deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
-                            var successCount = 0
-                            var failCount = 0
-                            var remaining = allRecordValuesArray.count
+                // Fix - change this so it only writes with a successful auth
+                userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+                
+                self.backupBtnState = self.backup_button.state.rawValue
+                
+                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+                var successCount = 0
+                var failCount = 0
+                var remaining = allRecordValuesArray.count
 
-                            DispatchQueue.main.async {
-                                self.spinner.startAnimation(self)
-                            }
-                            switch deviceType {
-                            case "computers":
-                                for i in 0..<allRecordValuesArray.count {
-                                    let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                                    let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
-                //                        print("valuesDict: \(allRecordValuesArray[i])")
-                //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
-=======
-            print("start to parse file and update.")
-            
-            // Fix - change this so it only writes an successful auth
-            userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
-            
-            self.backupBtnState = self.backup_button.state.rawValue
-            
-            deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
-            var successCount = 0
-            var failCount = 0
-            var remaining = allRecordValuesArray.count
+                DispatchQueue.main.async {
+                    self.spinner.startAnimation(self)
+                }
 
-            DispatchQueue.main.async {
-                self.spinner.startAnimation(self)
-            }
             switch deviceType {
-            case "computers":
-                for i in 0..<allRecordValuesArray.count {
-                    let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                    let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
+                case "computers":
+                    for i in 0..<allRecordValuesArray.count {
+                        let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                        let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
                         print("valuesDict: \(allRecordValuesArray[i])")
-//                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
->>>>>>> 74aa1fdaec114ff78007f4339b4156f76f618135
+    //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
 
-                //                        send API command/data
-                                    update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                                        (result: Bool) in
-                //                        print("result: \(result)")
-                                        if result {
-                                            successCount += 1
-                //                            print("successCount: \(successCount)\n")
-                                        } else {
-                                            failCount += 1
-                //                            print("failCount: \(failCount)\n")
-                                        }
-                                        remaining -= 1
-                                        self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                                        return true
-                                    }
+                    //                        send API command/data
+                        update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                                (result: Bool) in
+                            //                        print("result: \(result)")
+                                if result {
+                                    successCount += 1
+                            //                            print("successCount: \(successCount)\n")
+                                } else {
+                                    failCount += 1
+                            //                            print("failCount: \(failCount)\n")
                                 }
-                            case "mobiledevices":
-                                for i in 0..<allRecordValuesArray.count {
-                                    let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                                    let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
-                //                  print("valuesDict: \(allRecordValuesArray[i])")
-                //                  print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
-                                    
-                //                  send API command/data
-                                    update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                                        (result: Bool) in
-                //                        print("result: \(result)")
-                                        if result {
-                                            successCount += 1
-                //                            print("sucessCount: \(successCount)\n")
-                                        } else {
-                                            failCount += 1
-                //                            print("failCount: \(failCount)\n")
-                                        }
-                                        remaining -= 1
-                                        self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                                        return true
-                                    }
-                                }
-                                default:
-                                    break
+                                remaining -= 1
+                                self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                                return true
                             }
+                        }
+                case "mobiledevices":
+                    for i in 0..<allRecordValuesArray.count {
+                        let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                        let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
+    //                  print("valuesDict: \(allRecordValuesArray[i])")
+    //                  print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
+                        
+    //                  send API command/data
+                        update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                            (result: Bool) in
+    //                        print("result: \(result)")
+                            if result {
+                                successCount += 1
+    //                            print("sucessCount: \(successCount)\n")
+                            } else {
+                                failCount += 1
+    //                            print("failCount: \(failCount)\n")
+                            }
+                            remaining -= 1
+                            self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                            return true
+                        }
+                    }
+                    default:
+                        break
+                }   // switch deviceType - end
             } else {
                 alert_dialog("Attention:", message: "No records found to update, verify CSV file.")
             }
         } else {
-//            print("preview:")
-
+            print("preview:")
         }
     }
     
