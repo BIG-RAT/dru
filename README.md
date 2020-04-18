@@ -3,7 +3,7 @@ Perform mass updates to multiple attributes on either iOS or MacOS device record
 ![alt text](https://github.com/BIG-RAT/dru/blob/master/images/dru.png "Device Record Updater")
 Download: [dru](https://github.com/BIG-RAT/dru/releases/download/current/dru.zip)
 
-Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Containers/com.jamf.pse.dru2/Data/Library/Application\ Support/dru/backups``` and can be dropped back into the app to restore values.
+Provides the option to back-up a device record before updating it.  Note this is not a full back-up of all the device attributes but rather attributes we can change; name, asset tag, site, location attributes...  Backups are stored in ```~/Library/Application\ Support/dru/backups``` and can be dropped back into the app to restore values.
 
 Preview potential changes before committing them.
 Colors are used to help identify changes in an attribute value:
@@ -27,13 +27,7 @@ Currently updates are based on serial number, that being the only required data 
 * Better formatting of the preview page.
 * preference file.
 * More error checking.
-<<<<<<< HEAD
-* Add update button to preview field, to test updating the previewed record.
-=======
-* ~Add update button to preview field, to test updating the previewed record~.
->>>>>>> 74aa1fdaec114ff78007f4339b4156f76f618135
 * Better way to clear attribute value(s).
 * Help file.
-* Add device creation?
 * Ability to match off an attribute other than serial number.
 * Ability to use a delimiter other than a comma.
