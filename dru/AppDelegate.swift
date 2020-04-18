@@ -24,18 +24,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         switch fileType {
         case "iOS":
             theTemplate = "iOS_druTemplate.csv"
-            header = "display name, serial number, asset tag, full name, username, email address, building, department, device phone number, site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
+            header = "serial number,display name,asset tag,full name,username,email address,building,department,device phone number,site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
         default:
             theTemplate = "macOS_druTemplate.csv"
-            header = "computer name, serial number, asset tag, full name, username, email address, building, department, phone number, site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
+            header = "serial number,computer name,asset tag,full name,username,email address,building,department,phone number,site".data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue))
         }
-        if !(fm.fileExists(atPath: NSHomeDirectory() + "/Desktop/\(theTemplate)")) {
-            fm.createFile(atPath: NSHomeDirectory() + "/Desktop/\(theTemplate)", contents: nil, attributes: nil)
-            let templateFileHandle = FileHandle(forUpdatingAtPath: (NSHomeDirectory() + "/Desktop/\(theTemplate)"))
+        if !(fm.fileExists(atPath: NSHomeDirectory() + "/Downloads/\(theTemplate)")) {
+            fm.createFile(atPath: NSHomeDirectory() + "/Downloads/\(theTemplate)", contents: nil, attributes: nil)
+            let templateFileHandle = FileHandle(forUpdatingAtPath: (NSHomeDirectory() + "/Downloads/\(theTemplate)"))
             
             templateFileHandle?.write(header!)
+            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), saved to Downloads.")
         } else {
-            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), already exists on your Desktop.")
+            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), already exists in Downloads.")
         }
     }
     // create blank data file - end

@@ -53,6 +53,9 @@ class ViewController: NSViewController, URLSessionDelegate {
     var attributeArray  = [String]()
     var createdBackup   = false
     
+    var buildingsDict   = [String:String]()
+    var departmentsDict = [String:String]()
+    
     @IBOutlet weak var siteConnectionStatus_ImageView: NSImageView!
     let statusImage:[NSImage] = [NSImage(named: "red-dot")!,
                                  NSImage(named: "green-dot")!]
@@ -198,7 +201,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         self.safeHeaderArray.append("_" + lowercaseEaHeader)
                                         //                            safeEaHeaderArray.append((headerArray[i] as AnyObject).lowercased)
                                         //                            safeHeaderArray.append("_" + (headerArray[i] as AnyObject).lowercased)
-                                        safeHeaderIndex += 1
+                                        safeHeaderIndex   += 1
                                         safeEaHeaderIndex += 1
                                         // load extension attribute headers - end
                                     }
@@ -238,6 +241,24 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     
     @IBAction func parseFile_Button(_ sender: Any) {
+        // fetch existing buildings and departments - start
+        buildingsDict.removeAll()
+        existing.buildings.removeAll()
+        departmentsDict.removeAll()
+        Json().getRecord(theServer: "\(jssURL_TextField.stringValue)", base64Creds: SourceServer.creds, theEndpoint: "buildings") {
+        (result: [String:AnyObject]) in
+//            print("[parseFile_Button] results: \(result)")
+            let existingBuildingArray = result["buildings"] as! [[String:Any]]
+            for theBuilding in existingBuildingArray {
+                if let _ = theBuilding["id"], let _ = theBuilding["name"] {
+                    self.buildingsDict[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
+                    existing.buildings[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
+                }
+            }
+            print("[parseFile_Button] existing.buildings: \(existing.buildings)")
+        }
+        // fetch existing buildings and departments - end
+        
         if (sender as AnyObject).title == "Update" {
             if totalRecords > 0 {
                 // Fix - change this so it only writes with a successful auth
@@ -396,7 +417,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             prevChar = currChar
             charPosition += 1
         }   // while charPosition - end
-//        print("fieldArray: \(fieldArray)")
+        print("fieldArray: \(fieldArray)")
         return fieldArray as [String]
     }
     
@@ -494,7 +515,24 @@ class ViewController: NSViewController, URLSessionDelegate {
             "</extension_attributes>" +
         "</\(localDevice)>"
         
-        print("generatedXml: \(generatedXml)")
+        print("[ViewController] generatedXml: \(generatedXml)")
+        
+        // verify building and/or department exists (when needed) before returning
+        if localRecordDict["building"] != nil {
+//            print("[ViewController-gneerateXML] localRecordDict: \(localRecordDict["building"]!.lowercased())")
+            if existing.buildings[localRecordDict["building"]!.lowercased()] == nil {
+//                for (key,value) in buildingsDict {
+//                    print("[ViewController-gneerateXML] key: \(key) \t building: \(value)")
+//                }
+//                print("[ViewController-gneerateXML] need to create building: \(String(describing: localRecordDict["building"]!))")
+                print("[ViewController-gneerateXML] need to create building: \(String(describing: localBuilding))")
+            }
+        }
+        if localRecordDict["department"] != nil {
+            if existing.departments[localRecordDict["department"]!.lowercased()] == nil {
+                print("[ViewController-gneerateXML] need to create department: \(String(describing: localRecordDict["department"]!))")
+            }
+        }
         return "\(generatedXml)"
     }
     
@@ -522,7 +560,7 @@ class ViewController: NSViewController, URLSessionDelegate {
 //            print("processing device \(endpointCurrent)")
 //            print("URL: \(DestURL)")
 //            print("XML: \(endpointXML)\n")
-            
+            print("[update] DestURL: \(DestURL)")
             let encodedURL = NSURL(string: DestURL)
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             
@@ -562,9 +600,9 @@ class ViewController: NSViewController, URLSessionDelegate {
                             // http failed
                             // 401 - wrong username and/or password
                             // 409 - unable to create object; already exists or data missing or xml error
-                            print("httpResponse: \(httpResponse)")
-                            print("statusCode: \(httpResponse.statusCode)")
-                            print("\(endpointXML)")
+                            print("[update] httpResponse: \(httpResponse)")
+                            print("[update] statusCode: \(httpResponse.statusCode)")
+                            print("[update] \(endpointXML)")
                             completion(false)
                         }
                     }

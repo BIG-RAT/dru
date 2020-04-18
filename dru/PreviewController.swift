@@ -141,20 +141,15 @@ class PreviewController: NSViewController, URLSessionDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        DispatchQueue.main.async {
-//            self.dismiss(PreviewController.self)
-//        }
+        
         print("[PreviewController: viewDidLoad]")
         self.view.window?.orderOut(self)
 //        if prevAllRecordValuesArray.count > 0 {
-            webSpinner_ProgInd.startAnimation(self)
-            generatePage(recordNumber: 0)
-            DispatchQueue.main.async {
-                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
-            }
-//        } else {
-//            view.window?.close()
-//        }
+        webSpinner_ProgInd.startAnimation(self)
+        generatePage(recordNumber: 0)
+        DispatchQueue.main.async {
+            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        }
     }
     
     func generatePage(recordNumber: Int) {

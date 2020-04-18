@@ -124,7 +124,7 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
                         token = endpointJSON["token"] as! String
                         SourceServer.url   = serverUrl
                         SourceServer.creds = creds
-                        print("[UapiCall] creds: \(creds)")
+//                        print("[UapiCall] creds: \(creds)")
                         completion(token)
                         return
                     } else {    // if let endpointJSON error

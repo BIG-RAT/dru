@@ -14,3 +14,8 @@ struct SourceServer {
     static var username = ""
     static var password = ""
 }
+
+struct existing {
+    static var   buildings = [String:String]()
+    static var departments = [String:String]()
+}

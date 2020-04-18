@@ -10,6 +10,8 @@
 		B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5106FCD234EB1C80076761D /* Credentials2.swift */; };
 		B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5106FCF234EC68C0076761D /* UapiCall.swift */; };
 		B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B543C78A1F3BDF8B0090227C /* PreviewController.swift */; };
+		B573C7CA23CE80E90008ED34 /* Json.swift in Sources */ = {isa = PBXBuildFile; fileRef = B573C7C923CE80E90008ED34 /* Json.swift */; };
+		B573C7CC23CEC9800008ED34 /* ApiAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B573C7CB23CEC9800008ED34 /* ApiAction.swift */; };
 		B58E1A1423C936FB00BA6937 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B58E1A1323C936FB00BA6937 /* WebKit.framework */; };
 		B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20441F38E0F700C16EAA /* AppDelegate.swift */; };
 		B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5AC20461F38E0F700C16EAA /* ViewController.swift */; };
@@ -24,6 +26,8 @@
 		B5106FCD234EB1C80076761D /* Credentials2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials2.swift; sourceTree = "<group>"; };
 		B5106FCF234EC68C0076761D /* UapiCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UapiCall.swift; sourceTree = "<group>"; };
 		B543C78A1F3BDF8B0090227C /* PreviewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewController.swift; sourceTree = "<group>"; };
+		B573C7C923CE80E90008ED34 /* Json.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Json.swift; sourceTree = "<group>"; };
+		B573C7CB23CEC9800008ED34 /* ApiAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiAction.swift; sourceTree = "<group>"; };
 		B58E1A1323C936FB00BA6937 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B5AC20411F38E0F700C16EAA /* dru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5AC20441F38E0F700C16EAA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -76,8 +80,10 @@
 			isa = PBXGroup;
 			children = (
 				B5106FCC234E75E70076761D /* dru.entitlements */,
+				B573C7CB23CEC9800008ED34 /* ApiAction.swift */,
 				B5AC20441F38E0F700C16EAA /* AppDelegate.swift */,
 				B5106FCD234EB1C80076761D /* Credentials2.swift */,
+				B573C7C923CE80E90008ED34 /* Json.swift */,
 				B543C78A1F3BDF8B0090227C /* PreviewController.swift */,
 				B5106FCF234EC68C0076761D /* UapiCall.swift */,
 				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
@@ -173,7 +179,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B573C7CA23CE80E90008ED34 /* Json.swift in Sources */,
 				B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */,
+				B573C7CC23CEC9800008ED34 /* ApiAction.swift in Sources */,
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
 				B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */,
 				B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */,
@@ -317,7 +325,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MARKETING_VERSION = 0.8.1;
+				MARKETING_VERSION = 0.8.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -335,7 +343,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MARKETING_VERSION = 0.8.1;
+				MARKETING_VERSION = 0.8.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
