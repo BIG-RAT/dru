@@ -385,7 +385,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
 
         if existing != "" || update != "" {
             if ((existing != "" && update != "") && (existing != update)) {
-                updateText = "<td style='color:yellow'>\(update)</td>"
+                updateText = "<td style='color:yellow;font-style: italic'>\(update)</td>"
             } else if (existing == "" && update != "") {
                 updateText = "<td style='color:aqua'>\(update)</td>"
             } else {
@@ -393,7 +393,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
             }
             // mark attribute values getting removed
             if existing != "" && update == " " {
-                existingText = "<td style='color:red'>\(existing)</td>"
+                existingText = "<td style='color:redfont-style: bold'>\(existing)</td>"
             }
             currentRow = "<tr>" +
                 "<td style=\"text-align:right\">\(attribute):</td>" +
