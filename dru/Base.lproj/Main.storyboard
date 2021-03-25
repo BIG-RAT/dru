@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="17701" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
-        <plugIn identifier="com.apple.WebKit2IBPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="17701"/>
+        <plugIn identifier="com.apple.WebKit2IBPlugin" version="17701"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -815,7 +815,7 @@
                                 </buttonCell>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UuN-FM-EGA">
-                                <rect key="frame" x="507" y="11" width="85" height="32"/>
+                                <rect key="frame" x="506" y="11" width="87" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="eLJ-iY-XDP"/>
                                     <constraint firstAttribute="width" constant="73" id="m5v-s8-2SO"/>
@@ -830,7 +830,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5Nd-70-iZW">
-                                <rect key="frame" x="444" y="10" width="67" height="33"/>
+                                <rect key="frame" x="443" y="10" width="69" height="34"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="55" id="125-mu-qvH"/>
                                     <constraint firstAttribute="height" constant="22" id="ivd-BZ-yJe"/>
@@ -846,7 +846,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Fz-Mr-sig">
-                                <rect key="frame" x="589" y="11" width="85" height="32"/>
+                                <rect key="frame" x="588" y="11" width="87" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="Fp8-V1-dWl"/>
                                     <constraint firstAttribute="width" constant="73" id="JRx-XV-rYl"/>
@@ -903,7 +903,7 @@ DQ
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Apw-mP-vE4">
-                                <rect key="frame" x="308" y="-5" width="75" height="32"/>
+                                <rect key="frame" x="307" y="-5" width="77" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="7mI-XS-kuN"/>
                                     <constraint firstAttribute="width" constant="63" id="JOc-68-irx"/>
@@ -917,7 +917,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1eQ-IO-euE">
-                                <rect key="frame" x="376" y="-5" width="35" height="32"/>
+                                <rect key="frame" x="375" y="-5" width="37" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="23" id="D9U-FQ-Z9O"/>
                                     <constraint firstAttribute="height" constant="21" id="TQg-AC-eLn"/>
@@ -931,7 +931,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ogT-Pq-HDv">
-                                <rect key="frame" x="279" y="-5" width="35" height="32"/>
+                                <rect key="frame" x="278" y="-5" width="37" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="4Z0-zR-kjc"/>
                                     <constraint firstAttribute="width" constant="23" id="H3v-d2-j6b"/>
@@ -966,7 +966,7 @@ DQ
                                     <constraint firstAttribute="width" constant="65" id="ohW-zY-WwG"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" id="Be1-Bl-tgG">
-                                    <font key="font" metaFont="label" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -978,13 +978,13 @@ DQ
                                     <constraint firstAttribute="height" constant="16" id="ZCC-gH-p8k"/>
                                 </constraints>
                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Go To:" id="S2b-pa-eML">
-                                    <font key="font" metaFont="label" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hyk-ui-GBX">
-                                <rect key="frame" x="14" y="-5" width="76" height="32"/>
+                                <rect key="frame" x="13" y="-5" width="78" height="33"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="64" id="78u-RN-xbk"/>
                                     <constraint firstAttribute="height" constant="21" id="b45-zS-i3Z"/>
@@ -1004,7 +1004,7 @@ DQ
                                     <constraint firstAttribute="width" constant="42" id="nc0-JA-0bH"/>
                                 </constraints>
                                 <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" focusRingType="none" alignment="left" drawsBackground="YES" usesSingleLineMode="YES" id="2nm-o6-Eis">
-                                    <font key="font" metaFont="label" size="12"/>
+                                    <font key="font" metaFont="cellTitle"/>
                                     <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" red="0.28360787342867089" green="0.28360787342867089" blue="0.28360787342867089" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </textFieldCell>
@@ -1043,7 +1043,7 @@ DQ
                 </viewController>
                 <customObject id="3iz-IB-QJR" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="180" y="1316"/>
+            <point key="canvasLocation" x="230" y="1316"/>
         </scene>
     </scenes>
     <resources>
