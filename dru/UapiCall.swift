@@ -6,9 +6,6 @@
 //  Copyright © 2019 Leslie Helou. All rights reserved.
 //
 
-// get notifications from https://jamf.pro.server/uapi/notifications/alerts
-
-
 import Foundation
 
 class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTaskDelegate {
@@ -35,7 +32,7 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
             b64user = credentialsArray[0]
             b64pass = credentialsArray[1]
         } else {
-            print("credentials not found")
+            WriteToLog().message(stringOfText: "credentials not found")
             completion([])
             return
         }
@@ -45,7 +42,7 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
         token(serverUrl: jps, creds: b64creds) {
             (returnedToken: String) in
             if returnedToken == "" {
-                print("unable to get token")
+                WriteToLog().message(stringOfText: "unable to get token")
                 completion([])
                 return
             }
@@ -60,7 +57,7 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
             self.theUapiQ.addOperation {
                 URLCache.shared.removeAllCachedResponses()
                 
-                let encodedURL = NSURL(string: workingUrlString)
+                let encodedURL = URL(string: workingUrlString)
                 let request = NSMutableURLRequest(url: encodedURL! as URL)
                 
                 let configuration  = URLSessionConfiguration.default
@@ -78,18 +75,18 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
                                 completion(notificationsDictArray)
                                 return
                             } else {    // if let endpointJSON error
-                                print("[UapiCall] get JSON error")
+                                WriteToLog().message(stringOfText: "[UapiCall] get JSON error")
                                 completion([])
                                 return
                             }
                         } else {    // if httpResponse.statusCode <200 or >299
-                            print("[UapiCall] get response error: \(httpResponse.statusCode)")
+                            WriteToLog().message(stringOfText: "[UapiCall] get response error: \(httpResponse.statusCode)")
                             completion([])
                             return
                         }
                         
                     } else {
-                        print("\n HTTP error \n")
+                        WriteToLog().message(stringOfText: "\n HTTP error \n")
                     }
                 })
                 task.resume()
@@ -105,8 +102,8 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
         
         var token          = ""
         
-        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
-        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
+        var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
+        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
         
         let tokenUrl       = URL(string: "\(tokenUrlString)")
         let configuration  = URLSessionConfiguration.default
@@ -124,21 +121,21 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
                         token = endpointJSON["token"] as! String
                         SourceServer.url   = serverUrl
                         SourceServer.creds = creds
-//                        print("[UapiCall] creds: \(creds)")
+//                        WriteToLog().message(stringOfText: "[UapiCall] creds: \(creds)")
                         completion(token)
                         return
                     } else {    // if let endpointJSON error
-                        print("JSON error")
+                        WriteToLog().message(stringOfText: "JSON error")
                         completion("")
                         return
                     }
                 } else {    // if httpResponse.statusCode <200 or >299
-                    print("response error: \(httpResponse.statusCode)")
+                    WriteToLog().message(stringOfText: "response error: \(httpResponse.statusCode)")
                     completion("")
                     return
                 }
             } else {
-                print("token response error.  Verify url and port.")
+                WriteToLog().message(stringOfText: "token response error.  Verify url and port.")
                 completion("")
                 return
             }

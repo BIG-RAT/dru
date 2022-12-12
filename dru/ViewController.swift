@@ -11,7 +11,7 @@ import Cocoa
 import CoreFoundation
 import WebKit
 
-class ViewController: NSViewController, URLSessionDelegate {
+class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate {
 
     @IBOutlet weak var window: NSWindow!
     
@@ -22,7 +22,7 @@ class ViewController: NSViewController, URLSessionDelegate {
 
     @IBOutlet weak var dataFile_PathControl: NSPathControl!
     @IBOutlet weak var spinner: NSProgressIndicator!
-    @IBOutlet weak var hasHeader_Button: NSButtonCell!  // 0 - no header : 1 - header
+//    @IBOutlet weak var hasHeader_Button: NSButtonCell!  // 0 - no header : 1 - header
     @IBOutlet weak var deviceType_Matrix: NSMatrix! // 0 - computers : 1 - iOS
     
     @IBOutlet weak var backup_button: NSButton!
@@ -37,7 +37,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         print("login name: \(userName_TextField.stringValue)")
         print("login password: \(userPass_TextField.stringValue)")
         print("data file path: \(String(describing: dataFile_PathControl.url))")
-        print("header: \(hasHeader_Button.integerValue)")
+//        print("header: \(hasHeader_Button.integerValue)")
         print("device type: \(deviceType_Matrix.selectedRow)")
         print("sender: \(sender.title)")
     }
@@ -52,6 +52,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     var backupBtnState  = 1 // 1 - backup before updating, 0 - no backup
     var attributeArray  = [String]()
     var createdBackup   = false
+    var authResult      = "failed"
     
     var buildingsDict   = [String:String]()
     var departmentsDict = [String:String]()
@@ -124,118 +125,133 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     
     @IBAction func loadFile_PathControl(_ sender: NSPathControl) {
-        
-//      ensure arrays are empty
-        safeHeaderArray.removeAll()
-        safeEaHeaderArray.removeAll()
-        theLineArray.removeAll()
-        allRecordValuesArray.removeAll()
-        allXmlFilesArray.removeAll()
-        // parse header row, change lowercase start
-            if let pathToFile = self.dataFile_PathControl.url {
+        spinner(isRunning: true)
+        loadFileContents(theUrl: dataFile_PathControl.url!)
+    }
+    
+    func loadFileContents(theUrl: URL) {
+        DispatchQueue.global(qos: .background).async { [self] in
+            //      ensure arrays are empty
+            safeHeaderArray.removeAll()
+            safeEaHeaderArray.removeAll()
+            theLineArray.removeAll()
+            allRecordValuesArray.removeAll()
+            allXmlFilesArray.removeAll()
+            // parse header row, change lowercase start
+//            if let pathToFile = pathControl.url {
+            DispatchQueue.main.async {
+                let pathToFile = theUrl
+            //                print("\(#line) self.dataFile_PathControl: \(self.dataFile_PathControl.url?.path)")
                 let objPath: URL!
-                if let pathOrDirectory = self.dataFile_PathControl.url {
-                    print("fileOrPath: \(pathOrDirectory)")
-                    
-                    objPath = URL(string: "\(pathOrDirectory)")!
-                    var isDir : ObjCBool = false
-                    self.fileOrDir_TextField.stringValue = "--------"
-                    sleep(1)
-                    _ = self.fm.fileExists(atPath: objPath.path, isDirectory:&isDir)
-                    if isDir.boolValue {
-                        self.fileOrDir_TextField.stringValue = "directory"
-                        do {
-                            let xmlFiles = try self.fm.contentsOfDirectory(atPath: objPath.path)
-                            for xmlFile in xmlFiles {
-                                let xmlFilePath: String = "\(objPath.path)\(xmlFile)"
-                                self.allXmlFilesArray.append(xmlFilePath)
-                            }
-                            self.totalRecords = self.allXmlFilesArray.count
-                        } catch {
-                            self.alert_dialog("Warning", message: "Error reading directory")
-                            return
+
+    //            if let pathOrDirectory = theUrl {
+                let pathOrDirectory = theUrl
+                WriteToLog().message(stringOfText: "fileOrPath: \(pathOrDirectory)")
+                
+                objPath = URL(string: "\(pathOrDirectory)")!
+                var isDir : ObjCBool = false
+                self.fileOrDir_TextField.stringValue = "--------"
+                sleep(1)
+                _ = self.fm.fileExists(atPath: objPath.path, isDirectory:&isDir)
+                if isDir.boolValue {
+                    self.fileOrDir_TextField.stringValue = "directory"
+                    do {
+                        let xmlFiles = try self.fm.contentsOfDirectory(atPath: objPath.path)
+                        for xmlFile in xmlFiles {
+                            let xmlFilePath: String = "\(objPath.path)\(xmlFile)"
+                            self.allXmlFilesArray.append(xmlFilePath)
                         }
-                    } else {
-                        self.fileOrDir_TextField.stringValue = "file"
-                        do {
-                            let dataFile =  try Data(contentsOf:pathToFile)
-                            let attibutedString = try NSAttributedString(data: dataFile, documentAttributes: nil)
-                            let fileText = attibutedString.string
-                            let allLines = fileText.components(separatedBy: CharacterSet.newlines)
-                            // create header array - start
-                            if self.hasHeader_Button.state.rawValue == 1 {
-                                var safeHeaderIndex = 0
-                                var safeEaHeaderIndex = 0
-                                let headerArray = self.createFieldArray(theString: allLines[0])
-                                self.firstDataLine = 1
-                                self.headerCount = headerArray.count
-                                //                    print("headerArray: \(headerArray)")
-                                //                    print("headerCount: \(headerArray.count)")
-                                for i in 0..<self.headerCount {
-                                    if self.knownHeadersArray.firstIndex(of: (headerArray[i] ).lowercased()) != nil {
-                                        let lowercaseHeader = "\(headerArray[i] )".lowercased()
-                                        self.safeHeaderArray.append(lowercaseHeader)
-                                        switch lowercaseHeader {
-                                        case "computer name", "display name":
-                                            self.safeHeaderArray[safeHeaderIndex] = "deviceName"
-                                        case "serial number":
-                                            self.safeHeaderArray[safeHeaderIndex] = "serial_number"
-                                        case "asset tag":
-                                            self.safeHeaderArray[safeHeaderIndex] = "asset_tag"
-                                        case "site":
-                                            self.safeHeaderArray[safeHeaderIndex] = "siteName"
-                                        case "full name":
-                                            self.safeHeaderArray[safeHeaderIndex] = "real_name"
-                                        case "email address":
-                                            self.safeHeaderArray[safeHeaderIndex] = "email_address"
-                                        case "phone number", "user phone number":
-                                            self.safeHeaderArray[safeHeaderIndex] = "phone_number"
-                                        default: break
-                                            // all good
-                                        }
-                                        safeHeaderIndex += 1
-                                    } else {
-                                        // load extension attribute headers - start
-                                        let lowercaseEaHeader = "\(headerArray[i] )".lowercased()
-                                        self.safeEaHeaderArray.append(lowercaseEaHeader)
-                                        self.safeHeaderArray.append("_" + lowercaseEaHeader)
-                                        //                            safeEaHeaderArray.append((headerArray[i] as AnyObject).lowercased)
-                                        //                            safeHeaderArray.append("_" + (headerArray[i] as AnyObject).lowercased)
-                                        safeHeaderIndex   += 1
-                                        safeEaHeaderIndex += 1
-                                        // load extension attribute headers - end
-                                    }
-                                }
-                                //                    print("Built in Headers: \(safeHeaderArray)")
-                                //                    print("EA Headers: \(safeEaHeaderArray)")
-                            }
-                            // create header array - end
-                            if self.safeHeaderArray.count == 0 {
-                                self.alert_dialog("Warning", message: "Unable to identify any headers!")
-                                return
-                            }
-                            // parse data - start
-                            for i in self.firstDataLine..<allLines.count {
-                                if allLines[i] != "" {
-                                    //                                    print("\(i): \(allLines[i])")
-                                    self.allRecordValuesArray.append(self.xml(headerArray: self.safeHeaderArray , dataArray: self.createFieldArray(theString: allLines[i])))
-                                }
-                            }
-                            // parse data - end
-                            //                print("data: \(allRecordValuesArray)")
-                        } catch {
-                            print("file read error")
-                            return
-                        }
-                        self.totalRecords = self.allRecordValuesArray.count
+                        self.totalRecords = self.allXmlFilesArray.count
+                    } catch {
+                        self.alert_dialog("Warning", message: "Error reading directory")
+                        WriteToLog().message(stringOfText: "Error reading directory")
+                        self.spinner(isRunning: false)
+                        return
                     }
-                    
+                } else {
+                    self.fileOrDir_TextField.stringValue = "file"
+                    do {
+                        let dataFile =  try Data(contentsOf:pathToFile)
+                        let attibutedString = try NSAttributedString(data: dataFile, documentAttributes: nil)
+                        let fileText = attibutedString.string
+                        let allLines = fileText.components(separatedBy: CharacterSet.newlines)
+                        // create header array - start
+    //                            if self.hasHeader_Button.state.rawValue == 1 {
+                        var safeHeaderIndex = 0
+                        var safeEaHeaderIndex = 0
+                        let headerArray = self.createFieldArray(theString: allLines[0])
+                        self.firstDataLine = 1
+                        self.headerCount = headerArray.count
+                        //                    WriteToLog().message(stringOfText: "headerArray: \(headerArray)")
+                        //                    WriteToLog().message(stringOfText: "headerCount: \(headerArray.count)")
+                        for i in 0..<self.headerCount {
+                            if self.knownHeadersArray.firstIndex(of: (headerArray[i] ).lowercased()) != nil {
+                                let lowercaseHeader = "\(headerArray[i] )".lowercased()
+                                self.safeHeaderArray.append(lowercaseHeader)
+                                switch lowercaseHeader {
+                                case "computer name", "display name":
+                                    self.safeHeaderArray[safeHeaderIndex] = "deviceName"
+                                case "serial number":
+                                    self.safeHeaderArray[safeHeaderIndex] = "serial_number"
+                                case "asset tag":
+                                    self.safeHeaderArray[safeHeaderIndex] = "asset_tag"
+                                case "site":
+                                    self.safeHeaderArray[safeHeaderIndex] = "siteName"
+                                case "full name":
+                                    self.safeHeaderArray[safeHeaderIndex] = "real_name"
+                                case "email address":
+                                    self.safeHeaderArray[safeHeaderIndex] = "email_address"
+                                case "phone number", "user phone number":
+                                    self.safeHeaderArray[safeHeaderIndex] = "phone_number"
+                                default: break
+                                    // all good
+                                }
+                                safeHeaderIndex += 1
+                            } else {
+                                // load extension attribute headers - start
+                                let lowercaseEaHeader = "\(headerArray[i] )".lowercased()
+                                self.safeEaHeaderArray.append(lowercaseEaHeader)
+                                self.safeHeaderArray.append("_" + lowercaseEaHeader)
+                                //                            safeEaHeaderArray.append((headerArray[i] as AnyObject).lowercased)
+                                //                            safeHeaderArray.append("_" + (headerArray[i] as AnyObject).lowercased)
+                                safeHeaderIndex   += 1
+                                safeEaHeaderIndex += 1
+                                // load extension attribute headers - end
+                            }
+                        }
+                            //                    WriteToLog().message(stringOfText: "Built in Headers: \(safeHeaderArray)")
+                            //                    WriteToLog().message(stringOfText: "EA Headers: \(safeEaHeaderArray)")
+    //                            }
+                        // create header array - end
+                        if self.safeHeaderArray.count == 0 {
+                            self.alert_dialog("Warning", message: "Unable to identify any headers!")
+                            self.spinner(isRunning: false)
+                            return
+                        }
+                        // parse data - start
+                        for i in self.firstDataLine..<allLines.count {
+                            if allLines[i] != "" {
+                                //                                    WriteToLog().message(stringOfText: "\(i): \(allLines[i])")
+                                self.allRecordValuesArray.append(self.xml(headerArray: self.safeHeaderArray , dataArray: self.createFieldArray(theString: allLines[i])))
+                            }
+                        }
+                        // parse data - end
+                        //                WriteToLog().message(stringOfText: "data: \(allRecordValuesArray)")
+                    } catch {
+                        WriteToLog().message(stringOfText: "file read error")
+                        self.spinner(isRunning: false)
+                        return
+                    }
+                    self.totalRecords = self.allRecordValuesArray.count
                 }
-                
-                
+                        
+    //                }
+                    
+    //            }
+                self.updateCounts(remaining: self.totalRecords, updated: 0, created: 0, failed: 0)
+                self.spinner(isRunning: false)
             }
-        DispatchQueue.main.async {
-            self.updateCounts(remaining: self.totalRecords, updated: 0, created: 0, failed: 0)
+            
         }
     }
     
@@ -245,9 +261,18 @@ class ViewController: NSViewController, URLSessionDelegate {
         buildingsDict.removeAll()
         existing.buildings.removeAll()
         departmentsDict.removeAll()
-        Json().getRecord(theServer: "\(jssURL_TextField.stringValue)", base64Creds: SourceServer.creds, theEndpoint: "buildings") {
+        self.authResult = "succeeded"
+        Json().getRecord(theServer: "\(jssURL_TextField.stringValue)", base64Creds: SourceServer.creds, theEndpoint: "buildings") { [self]
         (result: [String:AnyObject]) in
-//            print("[parseFile_Button] results: \(result)")
+            print("[parseFile_Button] results: \(result)")
+            if result.count == 0 {
+                // authentication failed
+                self.authResult = "failed"
+                DispatchQueue.main.async {
+                    self.spinner(isRunning: false)
+                }
+                return
+            }
             let existingBuildingArray = result["buildings"] as! [[String:Any]]
             for theBuilding in existingBuildingArray {
                 if let _ = theBuilding["id"], let _ = theBuilding["name"] {
@@ -255,102 +280,86 @@ class ViewController: NSViewController, URLSessionDelegate {
                     existing.buildings[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
                 }
             }
-            print("[parseFile_Button] existing.buildings: \(existing.buildings)")
+            WriteToLog().message(stringOfText: "[parseFile_Button] existing.buildings: \(existing.buildings)")
+            deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+            if (sender as AnyObject).title == "Update" {
+                if totalRecords > 0 {
+                    // Fix - change this so it only writes with a successful auth
+                    userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+                    
+                    self.backupBtnState = self.backup_button.state.rawValue
+                    
+                    var successCount = 0
+                    var failCount    = 0
+                    var remaining    = allRecordValuesArray.count
+
+                    self.spinner(isRunning: true)
+
+                switch deviceType {
+                    case "computers":
+                        for i in 0..<allRecordValuesArray.count {
+                            let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                            let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
+                            WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
+        //                    WriteToLog().message(stringOfText: "generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
+
+                        //                        send API command/data
+                            update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                                    (result: Bool) in
+                                //                        WriteToLog().message(stringOfText: "result: \(result)")
+                                    if result {
+                                        successCount += 1
+                                //                            WriteToLog().message(stringOfText: "successCount: \(successCount)\n")
+                                    } else {
+                                        failCount += 1
+                                //                            WriteToLog().message(stringOfText: "failCount: \(failCount)\n")
+                                    }
+                                    remaining -= 1
+                                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                                    return true
+                                }
+                            }
+                        case "mobiledevices":
+                            for i in 0..<allRecordValuesArray.count {
+                                let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                                let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
+            //                  WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
+            //                  WriteToLog().message(stringOfText: "generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
+                                
+            //                  send API command/data
+                                update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                                    (result: Bool) in
+            //                        WriteToLog().message(stringOfText: "result: \(result)")
+                                    if result {
+                                        successCount += 1
+            //                            WriteToLog().message(stringOfText: "sucessCount: \(successCount)\n")
+                                    } else {
+                                        failCount += 1
+            //                            WriteToLog().message(stringOfText: "failCount: \(failCount)\n")
+                                    }
+                                    remaining -= 1
+                                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                                    return true
+                                }
+                            }
+                        default:
+                            break
+                    }   // switch deviceType - end
+                } else {
+                    alert_dialog("Attention:", message: "No records found to update, verify CSV file.")
+                }
+            } else {
+                WriteToLog().message(stringOfText: "preview deviceType: \(deviceType)")
+            }
         }
         // fetch existing buildings and departments - end
-        
-        if (sender as AnyObject).title == "Update" {
-            if totalRecords > 0 {
-                // Fix - change this so it only writes with a successful auth
-                userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
-                
-                self.backupBtnState = self.backup_button.state.rawValue
-                
-                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
-                var successCount = 0
-                var failCount = 0
-                var remaining = allRecordValuesArray.count
-
-                DispatchQueue.main.async {
-                    self.spinner.startAnimation(self)
-                }
-
-            switch deviceType {
-                case "computers":
-                    for i in 0..<allRecordValuesArray.count {
-                        let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                        let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
-                        print("valuesDict: \(allRecordValuesArray[i])")
-    //                    print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
-
-                    //                        send API command/data
-                        update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                                (result: Bool) in
-                            //                        print("result: \(result)")
-                                if result {
-                                    successCount += 1
-                            //                            print("successCount: \(successCount)\n")
-                                } else {
-                                    failCount += 1
-                            //                            print("failCount: \(failCount)\n")
-                                }
-                                remaining -= 1
-                                self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                                return true
-                            }
-                        }
-                case "mobiledevices":
-                    for i in 0..<allRecordValuesArray.count {
-                        let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                        let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
-    //                  print("valuesDict: \(allRecordValuesArray[i])")
-    //                  print("generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
-                        
-    //                  send API command/data
-                        update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                            (result: Bool) in
-    //                        print("result: \(result)")
-                            if result {
-                                successCount += 1
-    //                            print("sucessCount: \(successCount)\n")
-                            } else {
-                                failCount += 1
-    //                            print("failCount: \(failCount)\n")
-                            }
-                            remaining -= 1
-                            self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                            return true
-                        }
-                    }
-                    default:
-                        break
-                }   // switch deviceType - end
-            } else {
-                alert_dialog("Attention:", message: "No records found to update, verify CSV file.")
-            }
-        } else {
-            print("preview:")
-        }
     }
     
     
     @IBAction func QuitNow(_ sender: AnyObject) {
         NSApplication.shared.terminate(self)
     }
-    
-    // for preview window
-//    @IBAction func showPreviewWindow(_ sender: AnyObject) {
-//        print("show preview window")
-//        let storyboard = NSStoryboard(name: "Main", bundle: nil)
-//        let previewWindowController = storyboard.instantiateController(withIdentifier: "Preview Window Controller") as! NSWindowController
-//        if let previewWindow = previewWindowController.window {
-////            let previewViewController = previewWindow.contentViewController as! PreviewViewController
-//            let application = NSApplication.shared
-//            application.runModal(for: previewWindow)
-//            previewWindow.close()
-//        }
-//    }
-    
+  
     func createFieldArray(theString: String) -> [String] {
         
         var charPosition = 0
@@ -361,7 +370,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         var theField:String = ""
         var index:String.Index?
         
-        //print("starting check")
+        //WriteToLog().message(stringOfText: "starting check")
         var fieldArray:[String] = []
         var fieldNumber = 0
         
@@ -375,17 +384,17 @@ class ViewController: NSViewController, URLSessionDelegate {
                 if prevChar == "," && currChar == "\"" && !QuotedField {
                     QuotedField = true
                     prevChar = ""
-                    //print("entered quoted field")
+                    //WriteToLog().message(stringOfText: "entered quoted field")
                     while QuotedField && charPosition < strLength {
                         charPosition += 1
                         index = theString.index(theString.startIndex, offsetBy: charPosition)
-                        //print("quoted field: \(theString[index!])\tIndex: \(String(describing: index))")
+                        //WriteToLog().message(stringOfText: "quoted field: \(theString[index!])\tIndex: \(String(describing: index))")
                         currChar = "\(theString[index!])"
                         if prevChar == "\"" && currChar == "," && writeQuoteChar {
                             QuotedField = false
                             writeQuoteChar = true
                             
-//                            print("end quoted field")
+//                            WriteToLog().message(stringOfText: "end quoted field")
                             //charPosition -= 1
                             fieldArray.append(theField)
                             theField = ""
@@ -417,7 +426,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             prevChar = currChar
             charPosition += 1
         }   // while charPosition - end
-        print("fieldArray: \(fieldArray)")
+        WriteToLog().message(stringOfText: "fieldArray: \(fieldArray)")
         return fieldArray as [String]
     }
     
@@ -430,7 +439,7 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     func setValue(safeHeaderArray: [String], dataArray: [String], xmlKey: String) -> String {
         var theValue = ""
-        //        print("safeHeaderArray: \(safeHeaderArray)\t\t dataArray: \(dataArray)\t\t xmlKey: \(xmlKey)")
+        //        WriteToLog().message(stringOfText: "safeHeaderArray: \(safeHeaderArray)\t\t dataArray: \(dataArray)\t\t xmlKey: \(xmlKey)")
         
         //safeHeaderArray.contains(xmlKey) ? (theValue = dataArray[safeHeaderArray.index(of: xmlKey)] as! String) : (theValue = "")
         if safeHeaderArray.contains(xmlKey) {
@@ -460,7 +469,7 @@ class ViewController: NSViewController, URLSessionDelegate {
         var localDevice = ""    // define device xml tag, computer or mobile_device
         
         for (key,value) in localRecordDict {
-//            print("key: \(key)\t value: \(value)")
+//            WriteToLog().message(stringOfText: "key: \(key)\t value: \(value)")
             // allow a single space to be used to remove an attribute
             switch value {
             case " ":
@@ -497,7 +506,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                     var name = key
                     name.remove(at: name.startIndex)
 //                    name.characters.dropFirst(1)
-//                    print(name)
+//                    WriteToLog().message(stringOfText: name)
                     value == "" ? (localEa.append("")) : (localEa.append("<extension_attribute><name>\(name)</name><value>\(newValue)</value></extension_attribute>"))
                 }
             }
@@ -515,22 +524,22 @@ class ViewController: NSViewController, URLSessionDelegate {
             "</extension_attributes>" +
         "</\(localDevice)>"
         
-        print("[ViewController] generatedXml: \(generatedXml)")
+        WriteToLog().message(stringOfText: "[ViewController] generatedXml: \(generatedXml)")
         
         // verify building and/or department exists (when needed) before returning
         if localRecordDict["building"] != nil {
-//            print("[ViewController-gneerateXML] localRecordDict: \(localRecordDict["building"]!.lowercased())")
+//            WriteToLog().message(stringOfText: "[ViewController-gneerateXML] localRecordDict: \(localRecordDict["building"]!.lowercased())")
             if existing.buildings[localRecordDict["building"]!.lowercased()] == nil {
 //                for (key,value) in buildingsDict {
-//                    print("[ViewController-gneerateXML] key: \(key) \t building: \(value)")
+//                    WriteToLog().message(stringOfText: "[ViewController-gneerateXML] key: \(key) \t building: \(value)")
 //                }
-//                print("[ViewController-gneerateXML] need to create building: \(String(describing: localRecordDict["building"]!))")
-                print("[ViewController-gneerateXML] need to create building: \(String(describing: localBuilding))")
+//                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create building: \(String(describing: localRecordDict["building"]!))")
+                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create building: \(String(describing: localBuilding))")
             }
         }
         if localRecordDict["department"] != nil {
             if existing.departments[localRecordDict["department"]!.lowercased()] == nil {
-                print("[ViewController-gneerateXML] need to create department: \(String(describing: localRecordDict["department"]!))")
+                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create department: \(String(describing: localRecordDict["department"]!))")
             }
         }
         return "\(generatedXml)"
@@ -557,11 +566,11 @@ class ViewController: NSViewController, URLSessionDelegate {
         
         theUpdateQ.addOperation {
             
-//            print("processing device \(endpointCurrent)")
-//            print("URL: \(DestURL)")
-//            print("XML: \(endpointXML)\n")
-            print("[update] DestURL: \(DestURL)")
-            let encodedURL = NSURL(string: DestURL)
+//            WriteToLog().message(stringOfText: "processing device \(endpointCurrent)")
+//            WriteToLog().message(stringOfText: "URL: \(DestURL)")
+//            WriteToLog().message(stringOfText: "XML: \(endpointXML)\n")
+            WriteToLog().message(stringOfText: "[update] DestURL: \(DestURL)")
+            let encodedURL = URL(string: DestURL)
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             
             // backup record here
@@ -569,7 +578,7 @@ class ViewController: NSViewController, URLSessionDelegate {
 //                self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
                 (backupResult: Bool) in
                 
-//                print("returned from backup: \(Uid)")
+//                WriteToLog().message(stringOfText: "returned from backup: \(Uid)")
                 
                 if action == "PUT" {
                     request.httpMethod = "PUT"
@@ -592,17 +601,17 @@ class ViewController: NSViewController, URLSessionDelegate {
                         }
 
                         if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-                            print("\n\n---------- Success ----------")
-                            print("\(endpointXML)")
-                            print("---------- Success ----------")
+                            WriteToLog().message(stringOfText: "\n\n---------- Success ----------")
+                            WriteToLog().message(stringOfText: "\(endpointXML)")
+                            WriteToLog().message(stringOfText: "---------- Success ----------")
                             completion(true)
                         } else {
                             // http failed
                             // 401 - wrong username and/or password
                             // 409 - unable to create object; already exists or data missing or xml error
-                            print("[update] httpResponse: \(httpResponse)")
-                            print("[update] statusCode: \(httpResponse.statusCode)")
-                            print("[update] \(endpointXML)")
+                            WriteToLog().message(stringOfText: "[update] httpResponse: \(httpResponse)")
+                            WriteToLog().message(stringOfText: "[update] statusCode: \(httpResponse.statusCode)")
+                            WriteToLog().message(stringOfText: "[update] \(endpointXML)")
                             completion(false)
                         }
                     }
@@ -656,13 +665,13 @@ class ViewController: NSViewController, URLSessionDelegate {
             
 //                serverUrl = "\(jssURL)/JSSResource/\(fn_deviceType)/\(self.recordId)/\(deviceId)"
 //                let serverUrl = deviceUrl   // serverUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
-                //            print("serverUrl: \(serverUrl)")
+                //            WriteToLog().message(stringOfText: "serverUrl: \(serverUrl)")
             
-                let serverEncodedURL = NSURL(string: deviceUrl)
+                let serverEncodedURL = URL(string: deviceUrl)
                 let serverRequest = NSMutableURLRequest(url: serverEncodedURL! as URL)
                 //            print("serverRequest: \(serverRequest)")
                 serverRequest.httpMethod = "GET"
-//                print("getting: \(deviceUrl)")
+//                WriteToLog().message(stringOfText: "getting: \(deviceUrl)")
             
                 let configuration = URLSessionConfiguration.default
                 configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(SourceServer.creds)", "Accept" : "application/json"]
@@ -673,15 +682,15 @@ class ViewController: NSViewController, URLSessionDelegate {
                     let task = session.dataTask(with: serverRequest as URLRequest, completionHandler: {
                         (data, response, error) -> Void in
                         if let httpResponse = response as? HTTPURLResponse {
-        //                    print("statusCode: ",httpResponse.statusCode)
-        //                    print("httpResponse: ",httpResponse)
-                            //print("POST XML-\(endpointCurrent): endpointType: \(endpointType)  endpointNumber: \(endpointCurrent)")
+        //                    WriteToLog().message(stringOfText: "statusCode: ",httpResponse.statusCode)
+        //                    WriteToLog().message(stringOfText: "httpResponse: ",httpResponse)
+                            //WriteToLog().message(stringOfText: "POST XML-\(endpointCurrent): endpointType: \(endpointType)  endpointNumber: \(endpointCurrent)")
                             do {
                                 let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                                 if let endpointJSON = json as? [String: Any] {
                                     switch fn_deviceType {
                                     case "computers":
-//                                        print("computer case")
+//                                        WriteToLog().message(stringOfText: "computer case")
                                         fn_fullRecordDict = endpointJSON["computer"] as! [String:Any]
                                         // general info
                                         fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
@@ -703,8 +712,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
                                         // extension attributes
                                         fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
-        //                                print("\nEAs: \(fn_extAttributesDict.count)")
-        //                                print("EAs: \(fn_extAttributesDict)")
+        //                                WriteToLog().message(stringOfText: "\nEAs: \(fn_extAttributesDict.count)")
+        //                                WriteToLog().message(stringOfText: "EAs: \(fn_extAttributesDict)")
                                         for i in (0..<fn_extAttributesDict.count) {
                                             let EaName = fn_extAttributesDict[i]["name"] as! String
                                             let EaValue = fn_extAttributesDict[i]["value"]
@@ -713,7 +722,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         
                                     // default is iOS
                                     default:
-//                                        print("iOS case")
+//                                        WriteToLog().message(stringOfText: "iOS case")
                                         fn_fullRecordDict = endpointJSON["mobile_device"] as! [String:Any]
                                         // general info
                                         fn_generalDict = fn_fullRecordDict["general"] as! [String:Any]
@@ -735,8 +744,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                                         fn_currentRecordDict["room"] = fn_locationDict["room"] as? String
                                         // extension attributes
                                         fn_extAttributesDict = fn_fullRecordDict["extension_attributes"] as! [Dictionary<String, Any>]
-    //                                                                    print("\nEAs: \(fn_extAttributesDict.count)")
-    //                                                                    print("EAs: \(fn_extAttributesDict)")
+    //                                                                    WriteToLog().message(stringOfText: "\nEAs: \(fn_extAttributesDict.count)")
+    //                                                                    WriteToLog().message(stringOfText: "EAs: \(fn_extAttributesDict)")
                                         for i in (0..<fn_extAttributesDict.count) {
                                             let EaName = fn_extAttributesDict[i]["name"] as! String
                                             let EaValue = fn_extAttributesDict[i]["value"]
@@ -746,7 +755,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                                     
                                     for (key, value) in fn_currentRecordDict {
                                         fn_currentRecordDict[key] = self.quoteCommaInField(field: value)
-//                                        print("\(key): \(String(describing: fn_currentRecordDict[key]!))")
+//                                        WriteToLog().message(stringOfText: "\(key): \(String(describing: fn_currentRecordDict[key]!))")
                                         if self.attributeArray.count < fn_currentRecordDict.count {
                                             self.attributeArray.append(key)
                                         }
@@ -787,16 +796,16 @@ class ViewController: NSViewController, URLSessionDelegate {
                                     
                                 }   // if let serverEndpointJSON - end
                             } catch {
-                                print("[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
+                                WriteToLog().message(stringOfText: "[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
                             }   // end do/catch
 
                             if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-        //                        print("\nbackup record: \(fn_fullRecordDict)\n")
+        //                        WriteToLog().message(stringOfText: "\nbackup record: \(fn_fullRecordDict)\n")
                                 getResult = true
                             } else {
                                 // something failed
-                                print("httpResponse[backupQ failed]: \(httpResponse)")
-                                print("statusCode[backupQ failed]: \(httpResponse.statusCode)")
+                                WriteToLog().message(stringOfText: "httpResponse[backupQ failed]: \(httpResponse)")
+                                WriteToLog().message(stringOfText: "statusCode[backupQ failed]: \(httpResponse.statusCode)")
                                 getResult = false
                             }
                         }
@@ -850,6 +859,36 @@ class ViewController: NSViewController, URLSessionDelegate {
         }
     }
     
+    func controlTextDidChange(_ obj: Notification) {
+//        print("staticSourceDataArray: \(staticSourceDataArray)")
+        if let textField = obj.object as? NSTextField {
+            switch textField.identifier!.rawValue {
+            case "username":
+                userName = userName_TextField.stringValue
+            case "password":
+                userPass = userPass_TextField.stringValue
+            case "serverURL":
+                jssURL = jssURL_TextField.stringValue
+            default:
+                break
+            }
+        }
+    }
+    func controlTextDidEndEditing(_ obj: Notification) {
+        if let textField = obj.object as? NSTextField {
+            switch textField.identifier!.rawValue {
+            case "username":
+                userName = userName_TextField.stringValue
+            case "password":
+                userPass = userPass_TextField.stringValue
+            case "serverURL":
+                fetchCreds(url: jssURL_TextField.stringValue)
+            default:
+                break
+            }
+        }
+    }
+    
     func createFileFolder(itemPath: String, objectType: String) {
         if !fm.fileExists(atPath: itemPath) {
 //          try to create backup directory
@@ -857,13 +896,13 @@ class ViewController: NSViewController, URLSessionDelegate {
                 do {
                     try fm.createDirectory(atPath: itemPath, withIntermediateDirectories: true, attributes: nil)
                 } catch {
-                    print("Problem creating \(itemPath) folder:  \(error)")
+                    WriteToLog().message(stringOfText: "Problem creating \(itemPath) folder:  \(error)")
                 }
             } else {
                 do {
                     try fm.createFile(atPath: itemPath, contents: nil, attributes: nil)
                 } catch {
-                    print("Problem creating \(itemPath) folder:  \(error)")
+                    WriteToLog().message(stringOfText: "Problem creating \(itemPath) folder:  \(error)")
                 }
             }
         } // if !fm.fileExists -end
@@ -883,8 +922,8 @@ class ViewController: NSViewController, URLSessionDelegate {
     }
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-        print("[prepare]")
-        print("number of records: \(totalRecords)")
+//        print("[prepare]")
+        WriteToLog().message(stringOfText: "number of records: \(totalRecords)")
         let previewController: PreviewController = segue.destinationController as! PreviewController
         parseFile_Button(self)
         
@@ -895,11 +934,11 @@ class ViewController: NSViewController, URLSessionDelegate {
         let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
         jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
         
-        previewController.previewJssUrl = jssURL_TextField.stringValue
-        previewController.previewJamfCreds = jamfBase64Creds
-//        previewController.previewDeviceType = "computers"
+        previewController.authResult        = authResult
+        previewController.previewJssUrl     = jssURL_TextField.stringValue
+        previewController.previewJamfCreds  = jamfBase64Creds
         previewController.previewDeviceType = deviceType
-        previewController.previewRecordID = "serialnumber"  // what identifies the asset
+        previewController.previewRecordID   = "serialnumber"  // what identifies the asset
         
         previewController.prevAllRecordValuesArray = allRecordValuesArray
         previewController.prevLowercaseEaHeaderArray = safeEaHeaderArray
@@ -920,7 +959,7 @@ class ViewController: NSViewController, URLSessionDelegate {
             UapiCall().token(serverUrl: server, creds: b64creds) {
                 (returnedToken: String) in
                 if returnedToken != "" {
-                    print("authentication verified")
+                    WriteToLog().message(stringOfText: "authentication verified")
                     DispatchQueue.main.async {
                         self.siteConnectionStatus_ImageView.image = self.statusImage[1]
                     }
@@ -931,7 +970,7 @@ class ViewController: NSViewController, URLSessionDelegate {
                         Credentials2().save(service: "dru - \(keychainFqdn)", account: username, data: password)
                     }
                 } else {
-                    print("authentication failed")
+                    WriteToLog().message(stringOfText: "authentication failed")
                     DispatchQueue.main.async {
                         self.siteConnectionStatus_ImageView.image = self.statusImage[0]
                     }
@@ -940,18 +979,30 @@ class ViewController: NSViewController, URLSessionDelegate {
         }
     }
     
+    func spinner(isRunning: Bool) {
+//        DispatchQueue.main.async { [self] in
+            if isRunning {
+                spinner.startAnimation(self)
+            } else {
+                spinner.stopAnimation(self)
+            }
+//        }
+    }
+    
     func updateCounts(remaining: Int, updated: Int, created: Int, failed: Int) {
-//        print("remaining: \(remaining) \n updated: \(updated)\n created: \(created)\n failed: \(failed)")
-        DispatchQueue.main.async {
+//        WriteToLog().message(stringOfText: "remaining: \(remaining) \n updated: \(updated)\n created: \(created)\n failed: \(failed)")
+        DispatchQueue.main.async { [self] in
             //self.mySpinner_ImageView.rotate(byDegrees: CGFloat(self.deg))
-            self.remaining_TextField.stringValue = "\(remaining)"
-            self.updated_TextField.stringValue = "\(updated)"
-            self.failed_TextField.stringValue = "\(failed)"
+            remaining_TextField.stringValue = "\(remaining)"
+            updated_TextField.stringValue = "\(updated)"
+            failed_TextField.stringValue = "\(failed)"
             if remaining == 0 {
-                self.backupFileHandle?.closeFile()
-                self.createdBackup  = false
-                self.attributeArray = [String]()
-                self.spinner.stopAnimation(self)
+                backupFileHandle?.closeFile()
+                createdBackup  = false
+                attributeArray = [String]()
+                spinner(isRunning: false)
+            } else if updated == 0 && created == 0 && failed == 0 {
+                spinner(isRunning: false)
             }
         }
     }
@@ -980,17 +1031,21 @@ class ViewController: NSViewController, URLSessionDelegate {
     
     override func viewWillAppear() {
         super.viewWillAppear()
-        self.view.layer?.backgroundColor = CGColor(red: 0x31/255.0, green:0x5B/255.0, blue:0x7E/255.0, alpha:0.5)
-        
+//        self.view.layer?.backgroundColor = CGColor(red: 0x31/255.0, green:0x5B/255.0, blue:0x7E/255.0, alpha:0.5)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        jssURL_TextField.delegate   = self
+        userName_TextField.delegate = self
+        userPass_TextField.delegate = self
         jssURL_TextField.becomeFirstResponder()
         jssURL_TextField.window?.makeFirstResponder(jssURL_TextField)
         // Create application support and backup folder
         createFileFolder(itemPath: backupPath, objectType: "folder")
+        dataFile_PathControl.allowedTypes = ["csv", "txt"]
+//        dataFile_PathControl.url = URL(string: NSHomeDirectory() + "/Downloads/")
         
         // Create preference file if missing - start
         if !(fm.fileExists(atPath: appSupportPath + "settings.plist")) {
@@ -1020,14 +1075,8 @@ class ViewController: NSViewController, URLSessionDelegate {
                 as! [String:AnyObject]
         }
         catch{
-            NSLog("Error reading plist: \(error), format: \(format)")
+            WriteToLog().message(stringOfText: "Error reading plist: \(error), format: \(format)")
         }
-//        if plistData["jamfProURL"] != nil {
-//            jssURL_TextField.stringValue = plistData["jamfProURL"] as! String
-//        }
-//        if plistData["username"] != nil {
-//            userName_TextField.stringValue = plistData["username"] as! String
-//        }
         // read environment search settings - end
         
     }

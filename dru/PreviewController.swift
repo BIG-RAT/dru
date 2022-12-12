@@ -33,6 +33,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
     var previewJamfCreds        = ""
     var previewDeviceType       = ""
     var previewRecordID         = ""
+    var authResult              = ""
     
     var currentValuesDict       = [String:String]()
     var generalDict             = [String:Any]()
@@ -88,19 +89,19 @@ class PreviewController: NSViewController, URLSessionDelegate {
         case "computers":
                 let Uid = "\(prevAllRecordValuesArray[currentRecord]["serial_number"] ?? "")"
                 let updateDeviceXml = "\(vc.generateXml(deviceType: "computers", localRecordDict: prevAllRecordValuesArray[currentRecord]))"
-                print("currentRecord: \(currentRecord)\nvaluesDict: \(prevAllRecordValuesArray[currentRecord])")
-                //                    print("generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
+                WriteToLog().message(stringOfText: "[PreviewController] currentRecord: \(currentRecord)\nvaluesDict: \(prevAllRecordValuesArray[currentRecord])")
+                //                    WriteToLog().message(stringOfText: "[PreviewController] generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
                 
                 //                        send API command/data
                 vc.update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                     (result: Bool) in
-                    //                        print("result: \(result)")
+                    //                        WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                     if result {
 //                        successCount += 1
-                        //                            print("successCount: \(successCount)\n")
+                        //                            WriteToLog().message(stringOfText: "[PreviewController] successCount: \(successCount)\n")
                     } else {
 //                        failCount += 1
-                        //                            print("failCount: \(failCount)\n")
+                        //                            WriteToLog().message(stringOfText: "[PreviewController] failCount: \(failCount)\n")
                     }
 //                    remaining -= 1
 //                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
@@ -112,19 +113,19 @@ class PreviewController: NSViewController, URLSessionDelegate {
         case "mobiledevices":
                 let Uid = "\(prevAllRecordValuesArray[currentRecord]["serial_number"] ?? "")"
                 let updateDeviceXml = "\(vc.generateXml(deviceType: "mobiledevices", localRecordDict: prevAllRecordValuesArray[currentRecord]))"
-                //                  print("valuesDict: \(prevAllRecordValuesArray[currentRecord])")
-                //                  print("generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
+                //                  WriteToLog().message(stringOfText: "[PreviewController] valuesDict: \(prevAllRecordValuesArray[currentRecord])")
+                //                  WriteToLog().message(stringOfText: "[PreviewController] generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
                 
                 //                  send API command/data
                 vc.update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                     (result: Bool) in
-                    //                        print("result: \(result)")
+                    //                        WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                     if result {
 //                        successCount += 1
-                        //                            print("sucessCount: \(successCount)\n")
+                        //                            WriteToLog().message(stringOfText: "[PreviewController] sucessCount: \(successCount)\n")
                     } else {
 //                        failCount += 1
-                        //                            print("failCount: \(failCount)\n")
+                        //                            WriteToLog().message(stringOfText: "[PreviewController] failCount: \(failCount)\n")
                     }
 //                    remaining -= 1
 //                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
@@ -141,19 +142,29 @@ class PreviewController: NSViewController, URLSessionDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        print("[PreviewController: viewDidLoad]")
+//        print("\(#line)-[PreviewController] authResult: \(authResult)")
+//        WriteToLog().message(stringOfText: "[PreviewController: viewDidLoad]")
         self.view.window?.orderOut(self)
-//        if prevAllRecordValuesArray.count > 0 {
-        webSpinner_ProgInd.startAnimation(self)
-        generatePage(recordNumber: 0)
-        DispatchQueue.main.async {
-            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+
+        if authResult == "failed" {
+            DispatchQueue.main.async {
+                self.view.window?.close()
+            }
+        } else {
+            webSpinner_ProgInd.startAnimation(self)
+            generatePage(recordNumber: 0)
+            DispatchQueue.main.async {
+                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+            }
         }
+    }
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        self.view.window?.title = (previewDeviceType == "computers") ? "Device Preview: Computer":"Device Preview: Mobile Device"
     }
     
     func generatePage(recordNumber: Int) {
-//        print("present values: \(prevAllRecordValuesArray[recordNumber])")
+//        WriteToLog().message(stringOfText: "[PreviewController] present values: \(prevAllRecordValuesArray[recordNumber])")
         if prevAllRecordValuesArray.count > 0 {
             let theDevice    = "\(prevAllRecordValuesArray[recordNumber]["deviceName"] ?? "")"
             let serialNumber = "\(prevAllRecordValuesArray[recordNumber]["serial_number"] ?? "")"
@@ -170,9 +181,9 @@ class PreviewController: NSViewController, URLSessionDelegate {
 
             getEndpoint(id: serialNumber) {
                 (result: Dictionary) in
-    //            print("result: \(result)")
+    //            WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                 let existingValuesDict = result
-    //            print("bundle path: \(Bundle.main.bundlePath)")
+    //            WriteToLog().message(stringOfText: "[PreviewController] bundle path: \(Bundle.main.bundlePath)")
                 // old background: #619CC7
                 self.previewPage = "<!DOCTYPE html>" +
                     "<html>" +
@@ -222,7 +233,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
                     "</table>" +
                     "</body>" +
                 "</html>"
-    //        print("new test: \(previewPage)")
+    //        WriteToLog().message(stringOfText: "[PreviewController] new test: \(previewPage)")
                 self.preview_WebView.loadHTMLString(self.previewPage, baseURL: nil)
                 self.webSpinner_ProgInd.stopAnimation(self)
                 return [:]
@@ -245,11 +256,11 @@ class PreviewController: NSViewController, URLSessionDelegate {
         myQ.async {
             var serverUrl = "\(self.previewJssUrl)/JSSResource/\(self.previewDeviceType)/\(self.previewRecordID)/\(uniqueID)"
             serverUrl = serverUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
-//            print("serverUrl: \(serverUrl)")
+//            WriteToLog().message(stringOfText: "[PreviewController] serverUrl: \(serverUrl)")
             
-            let serverEncodedURL = NSURL(string: serverUrl)
+            let serverEncodedURL = URL(string: serverUrl)
             let serverRequest = NSMutableURLRequest(url: serverEncodedURL! as URL)
-//            print("serverRequest: \(serverRequest)")
+//            WriteToLog().message(stringOfText: "[PreviewController] serverRequest: \(serverRequest)")
             serverRequest.httpMethod = "GET"
             let serverConf = URLSessionConfiguration.default
             serverConf.httpAdditionalHeaders = ["Authorization" : "Basic \(self.previewJamfCreds)", "Content-Type" : "application/json", "Accept" : "application/json"]
@@ -257,14 +268,15 @@ class PreviewController: NSViewController, URLSessionDelegate {
             let task = serverSession.dataTask(with: serverRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
                 if let httpResponse = response as? HTTPURLResponse {
-//                  print("httpResponse: \(String(describing: response))")
+//                  WriteToLog().message(stringOfText: "[PreviewController] httpResponse: \(String(describing: response))")
                     do {
                         let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                         if let endpointJSON = json as? [String: Any] {
-//                          print("endpointJSON: \(endpointJSON)")
-                            switch self.previewDeviceType {
+                            print("preview case type: \(self.previewDeviceType.lowercased())")
+//                          WriteToLog().message(stringOfText: "[PreviewController] endpointJSON: \(endpointJSON)")
+                            switch self.previewDeviceType.lowercased() {
                             case "computers":
-                                print("computer case")
+                                WriteToLog().message(stringOfText: "[PreviewController] computer case")
                                 let fullRecord = endpointJSON["computer"] as! [String:Any]
                                 // general info
                                 self.generalDict = fullRecord["general"] as! [String:Any]
@@ -286,8 +298,8 @@ class PreviewController: NSViewController, URLSessionDelegate {
                                 self.currentValuesDict["room"] = self.locationDict["room"] as? String
                                 // extension attributes
                                 self.extAttributesDict = fullRecord["extension_attributes"] as! [Dictionary<String, Any>]
-//                                print("\nEAs: \(self.extAttributesDict.count)")
-//                                print("EAs: \(self.extAttributesDict)")
+//                                WriteToLog().message(stringOfText: "[PreviewController] \nEAs: \(self.extAttributesDict.count)")
+//                                WriteToLog().message(stringOfText: "[PreviewController] EAs: \(self.extAttributesDict)")
                                 for i in (0..<self.extAttributesDict.count) {
                                     let EaName = self.extAttributesDict[i]["name"] as! String
                                     let EaValue = self.extAttributesDict[i]["value"]
@@ -297,10 +309,8 @@ class PreviewController: NSViewController, URLSessionDelegate {
 //                                    self.lowercaseEaValuesDict[EaName.lowercased()] = EaName
                                 }
 
-
-                            // default is iOS
-                            default:
-                                print("iOS case")
+                            case "mobiledevices":
+                                WriteToLog().message(stringOfText: "[PreviewController] iOS case")
                                 let fullRecord = endpointJSON["mobile_device"] as! [String:Any]
                                 // general info
                                 self.generalDict = fullRecord["general"] as! [String:Any]
@@ -322,8 +332,8 @@ class PreviewController: NSViewController, URLSessionDelegate {
                                 self.currentValuesDict["room"] = self.locationDict["room"] as? String
                                 // extension attributes
                                 self.extAttributesDict = fullRecord["extension_attributes"] as! [Dictionary<String, Any>]
-//                                print("\nEAs: \(self.extAttributesDict.count)")
-//                                print("EAs: \(self.extAttributesDict)")
+//                                WriteToLog().message(stringOfText: "[PreviewController] \nEAs: \(self.extAttributesDict.count)")
+//                                WriteToLog().message(stringOfText: "[PreviewController] EAs: \(self.extAttributesDict)")
                                 for i in (0..<self.extAttributesDict.count) {
                                     let EaName = self.extAttributesDict[i]["name"] as! String
                                     let EaValue = self.extAttributesDict[i]["value"]
@@ -332,20 +342,22 @@ class PreviewController: NSViewController, URLSessionDelegate {
                                     }
 //                                    self.lowercaseEaValuesDict[EaName.lowercased()] = EaName
                                 }
+                            default:
+                                break
                             }   // switch - end
                         }   // if let serverEndpointJSON - end
                         
                     } catch {
-                        print("[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
+                        WriteToLog().message(stringOfText: "[PreviewController] Existing endpoints: error serializing JSON: \(error)\n")
                     }   // end do/catch
                     
                     if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-                        //print(httpResponse.statusCode)
+                        //WriteToLog().message(stringOfText: httpResponse.statusCode)
                         
                         completion(self.currentValuesDict)
                     } else {
                         // something went wrong
-                        print("status code: \(httpResponse.statusCode)")
+                        WriteToLog().message(stringOfText: "[PreviewController] status code: \(httpResponse.statusCode)")
                         completion([:])
                         
                     }   // if httpResponse/else - end
@@ -354,7 +366,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
                 if error != nil {
                 }
             })  // let task = destSession - end
-            //print("GET")
+            //WriteToLog().message(stringOfText: "[PreviewController] GET")
             task.resume()
             //semaphore.wait()
         }   // theOpQ - end
@@ -381,7 +393,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
         var updateText = ""
         var existingText = "<td>\(existing)</td>"
         
-//        print("\(attribute): \t existing: .\(existing). \t update: .\(update).")
+//        WriteToLog().message(stringOfText: "[PreviewController] \(attribute): \t existing: .\(existing). \t update: .\(update).")
 
         if existing != "" || update != "" {
             if ((existing != "" && update != "") && (existing != update)) {

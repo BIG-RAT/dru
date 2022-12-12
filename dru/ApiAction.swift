@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class ApiAction: NSURL, URLSessionDelegate, URLSessionDataDelegate, URLSessionTaskDelegate {
+class ApiAction: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTaskDelegate {
     
     var theApiQ = OperationQueue() // create operation queue for API calls
     
@@ -40,7 +40,7 @@ class ApiAction: NSURL, URLSessionDelegate, URLSessionDataDelegate, URLSessionTa
     
         theApiQ.addOperation {
 
-            let encodedURL = NSURL(string: workingUrl)
+            let encodedURL = URL(string: workingUrl)
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             request.httpMethod = "POST"
             let configuration = URLSessionConfiguration.default
@@ -60,16 +60,16 @@ class ApiAction: NSURL, URLSessionDelegate, URLSessionDataDelegate, URLSessionTa
 //                        print(responseData)
                     
                     if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
-                        print("successfully created item")
+                        WriteToLog().message(stringOfText: "successfully created item")
                         returnInfo["response"] = responseData
                         completion([endpointType:"successful"])
                     } else {
-                        print("\n\n")
-                        print("[RemoveEndpoints] ---------- status code ----------\n")
-                        print("[RemoveEndpoints] \(httpResponse.statusCode)\n")
-                        print("[RemoveEndpoints] ---------- response ----------\n")
-                        print("[RemoveEndpoints] \(httpResponse)\n")
-                        print("[RemoveEndpoints] ---------- response ----------\n\n")
+                        WriteToLog().message(stringOfText: "\n\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- status code ----------\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse.statusCode)\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- response ----------\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse)\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- response ----------\n\n")
                         returnInfo["response"] = "\(httpResponse.statusCode)"
                         completion(returnInfo)
                     }

@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class Json: NSURL, URLSessionDelegate {
+class Json: NSObject, URLSessionDelegate {
     
     let defaults = UserDefaults.standard
     
@@ -23,8 +23,8 @@ class Json: NSURL, URLSessionDelegate {
         existingDestUrl = existingDestUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
 //        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
-        print("[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
-        let destEncodedURL = NSURL(string: existingDestUrl)
+        WriteToLog().message(stringOfText: "[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
+        let destEncodedURL = URL(string: existingDestUrl)
         let jsonRequest    = NSMutableURLRequest(url: destEncodedURL! as URL)
         
         let semaphore = DispatchSemaphore(value: 0)
@@ -38,7 +38,8 @@ class Json: NSURL, URLSessionDelegate {
             let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
                 if let httpResponse = response as? HTTPURLResponse {
-//                    print("[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
+//                    WriteToLog().message(stringOfText: "[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
+                    WriteToLog().message(stringOfText: "[Json.getRecord] HTTP Status Code: \(httpResponse.statusCode)")
                     if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
                         do {
                             let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
@@ -51,7 +52,6 @@ class Json: NSURL, URLSessionDelegate {
                             }
                         }
                     } else {
-                        print("[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
                         if "\(httpResponse.statusCode)" == "401" {
                             ViewController().alert_dialog("Attention:", message: "Verify username and password.")
                         }
@@ -66,7 +66,7 @@ class Json: NSURL, URLSessionDelegate {
                 if error != nil {
                 }
             })  // let task = destSession - end
-            //print("GET")
+            //WriteToLog().message(stringOfText: "GET")
             task.resume()
         }   // getRecordQ - end
     }
@@ -77,9 +77,9 @@ class Json: NSURL, URLSessionDelegate {
         
         var token          = ""
         
-        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
-        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
-//        print("\(tokenUrlString)")
+        var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
+        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
+//        WriteToLog().message(stringOfText: "\(tokenUrlString)")
         
         let tokenUrl       = URL(string: "\(tokenUrlString)")
         let configuration  = URLSessionConfiguration.default
@@ -98,12 +98,12 @@ class Json: NSURL, URLSessionDelegate {
                         completion(token)
                         return
                     } else {    // if let endpointJSON error
-                        print("JSON error")
+                        WriteToLog().message(stringOfText: "JSON error")
                         completion("")
                         return
                     }
                 } else {    // if httpResponse.statusCode <200 or >299
-                    print("response error: \(httpResponse.statusCode)")
+                    WriteToLog().message(stringOfText: "response error: \(httpResponse.statusCode)")
 
                     if "\(httpResponse.statusCode)" == "401" {
                         ViewController().alert_dialog("Attention:", message: "Failed to authenticate.  Verify username and password.")
@@ -112,7 +112,7 @@ class Json: NSURL, URLSessionDelegate {
                     return
                 }
             } else {
-                print("token response error.  Verify url and port.")
+                WriteToLog().message(stringOfText: "token response error.  Verify url and port.")
                 ViewController().alert_dialog("Attention:", message: "No response from the server.  Verify URL and port.")
                 completion("")
                 return
