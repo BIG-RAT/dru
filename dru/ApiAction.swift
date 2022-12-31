@@ -64,12 +64,12 @@ class ApiAction: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessio
                         returnInfo["response"] = responseData
                         completion([endpointType:"successful"])
                     } else {
-                        WriteToLog().message(stringOfText: "\n\n")
-                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- status code ----------\n")
-                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse.statusCode)\n")
+                        WriteToLog().message(stringOfText: "\n")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- status code ----------")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse.statusCode)")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- response ----------")
+                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse)")
                         WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- response ----------\n")
-                        WriteToLog().message(stringOfText: "[RemoveEndpoints] \(httpResponse)\n")
-                        WriteToLog().message(stringOfText: "[RemoveEndpoints] ---------- response ----------\n\n")
                         returnInfo["response"] = "\(httpResponse.statusCode)"
                         completion(returnInfo)
                     }

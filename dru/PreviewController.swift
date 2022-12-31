@@ -99,16 +99,9 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
                 //                        send API command/data
                 vc.update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                     (result: Bool) in
-                    //                        WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                     if result {
-//                        successCount += 1
-                        //                            WriteToLog().message(stringOfText: "[PreviewController] successCount: \(successCount)\n")
                     } else {
-//                        failCount += 1
-                        //                            WriteToLog().message(stringOfText: "[PreviewController] failCount: \(failCount)\n")
                     }
-//                    remaining -= 1
-//                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
                     self.webSpinner_ProgInd.stopAnimation(self)
                     self.goTo_TextField.stringValue = "\(self.currentRecord+1)"
                     self.goTo_Action(self)
@@ -117,22 +110,13 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
         case "mobiledevices":
                 let Uid = "\(prevAllRecordValuesArray[currentRecord]["serial_number"] ?? "")"
                 let updateDeviceXml = "\(vc.generateXml(deviceType: "mobiledevices", localRecordDict: prevAllRecordValuesArray[currentRecord]))"
-                //                  WriteToLog().message(stringOfText: "[PreviewController] valuesDict: \(prevAllRecordValuesArray[currentRecord])")
-                //                  WriteToLog().message(stringOfText: "[PreviewController] generateXml: \(generateXml(localRecordDict: prevAllRecordValuesArray[currentRecord]))")
                 
                 //                  send API command/data
                 vc.update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: currentRecord+1, endpointCount: prevAllRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                     (result: Bool) in
-                    //                        WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                     if result {
-//                        successCount += 1
-                        //                            WriteToLog().message(stringOfText: "[PreviewController] sucessCount: \(successCount)\n")
                     } else {
-//                        failCount += 1
-                        //                            WriteToLog().message(stringOfText: "[PreviewController] failCount: \(failCount)\n")
                     }
-//                    remaining -= 1
-//                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
                     self.webSpinner_ProgInd.stopAnimation(self)
                     self.goTo_TextField.stringValue = "\(self.currentRecord+1)"
                     self.goTo_Action(self)
@@ -320,7 +304,6 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
 //                          WriteToLog().message(stringOfText: "[PreviewController] endpointJSON: \(endpointJSON)")
                             switch self.previewDeviceType.lowercased() {
                             case "computers":
-                                WriteToLog().message(stringOfText: "[PreviewController] computer case")
                                 let fullRecord = endpointJSON["computer"] as! [String:Any]
                                 // general info
                                 self.generalDict = fullRecord["general"] as! [String:Any]
@@ -354,7 +337,6 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
                                 }
 
                             case "mobiledevices":
-                                WriteToLog().message(stringOfText: "[PreviewController] iOS case")
                                 let fullRecord = endpointJSON["mobile_device"] as! [String:Any]
                                 // general info
                                 self.generalDict = fullRecord["general"] as! [String:Any]
@@ -392,7 +374,7 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
                         }   // if let serverEndpointJSON - end
                         
                     } catch {
-                        WriteToLog().message(stringOfText: "[PreviewController] Existing endpoints: error serializing JSON: \(error)\n")
+                        WriteToLog().message(stringOfText: "[PreviewController] Existing endpoints: error serializing JSON: \(error)")
                     }   // end do/catch
                     
                     if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {

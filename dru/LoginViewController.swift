@@ -61,7 +61,7 @@ class LoginViewController: NSViewController {
             server_textfield.stringValue = userDefaults.string(forKey: "jamfProURL")!
             let regexKey = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
             let credKey  = regexKey.stringByReplacingMatches(in: server_textfield.stringValue, options: [], range: NSRange(0..<server_textfield.stringValue.utf16.count), withTemplate: "").replacingOccurrences(of: "?failover", with: "")
-            let credentailArray = Credentials2().retrieve(service: "dru - "+credKey)
+            let credentailArray = Credentials2().retrieve(service: "dru-"+credKey)
             if credentailArray.count == 2 {
                 username_textfield.stringValue = credentailArray[0]
                 password_textfield.stringValue = credentailArray[1]

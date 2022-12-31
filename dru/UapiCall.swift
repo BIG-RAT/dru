@@ -19,25 +19,9 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
     
     func get(endpoint: String, completion: @escaping (_ notificationAlerts: [Dictionary<String,Any>]) -> Void) {
         
-        var b64user = ""
-        var b64pass = ""
-        
         let jps        = defaults.string(forKey:"jamfServerUrl") ?? ""
         let urlRegex   = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
         let serverFqdn = urlRegex.stringByReplacingMatches(in: jps, options: [], range: NSRange(0..<jps.utf16.count), withTemplate: "")
-        
-        // search the keychain for credentials
-        let credentialsArray = Credentials2().retrieve(service: "jamfStatus: \(serverFqdn)")
-        if credentialsArray.count == 2 {
-            b64user = credentialsArray[0]
-            b64pass = credentialsArray[1]
-        } else {
-            WriteToLog().message(stringOfText: "credentials not found")
-            completion([])
-            return
-        }
-        
-        let b64creds = ("\(b64user):\(b64pass)".data(using: .utf8)?.base64EncodedString())!
         
         URLCache.shared.removeAllCachedResponses()
         
@@ -78,7 +62,7 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
                     }
                     
                 } else {
-                    WriteToLog().message(stringOfText: "\n HTTP error \n")
+                    WriteToLog().message(stringOfText: "[UapiCall.get] HTTP error")
                 }
             })
             task.resume()

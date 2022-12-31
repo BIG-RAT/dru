@@ -96,7 +96,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
         jamfProServer.base64Creds["source"] = (jamfUtf8Creds?.base64EncodedString())!
         
         // check authentication, check version, set auth method - start
-        WriteToLog().message(stringOfText: "\n[ViewController] Running dru v\(appInfo.version)")
+        WriteToLog().message(stringOfText: "[ViewController] Running dru v\(appInfo.version)")
         TokenDelegate().getToken(whichServer: "source", serverUrl: jamfProServer.source, base64creds: jamfProServer.base64Creds["source"]!) { [self]
             authResult in
             let (statusCode,theResult) = authResult
@@ -454,7 +454,6 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
         var localDevice       = ""    // define device xml tag, computer or mobile_device
         
         for (key,value) in localRecordDict {
-//            WriteToLog().message(stringOfText: "key: \(key)\t value: \(value)")
             // allow a single space to be used to remove an attribute
             switch value {
             case " ":
@@ -466,7 +465,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
             case "deviceName":
                 value == "" ? (localDeviceName = "") : (localDeviceName = "<name>\(newValue)</name>")
             case "asset_tag":
-                value == "" ? (localUsername = "") : (localAssetTag = "<asset_tag>\(newValue)</asset_tag>")
+                value == "" ? (localAssetTag = "") : (localAssetTag = "<asset_tag>\(newValue)</asset_tag>")
             case "siteName":
                 value == "" ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
             case "username":
@@ -508,7 +507,6 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
             localEa +
             "</extension_attributes>" +
         "</\(localDevice)>"
-        
         WriteToLog().message(stringOfText: "[ViewController] generatedXml: \(generatedXml)")
         
         // verify building and/or department exists (when needed) before returning
@@ -549,7 +547,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
             
 //            WriteToLog().message(stringOfText: "processing device \(endpointCurrent)")
 //            WriteToLog().message(stringOfText: "URL: \(DestURL)")
-//            WriteToLog().message(stringOfText: "XML: \(endpointXML)\n")
+//            WriteToLog().message(stringOfText: "XML: \(endpointXML)")
             WriteToLog().message(stringOfText: "[update] DestURL: \(DestURL)")
             let encodedURL = URL(string: DestURL)
             let request = NSMutableURLRequest(url: encodedURL! as URL)
@@ -740,7 +738,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                                         }
     //                                    recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
                                         recordText = String(recordText[..<recordText.endIndex])
-                                        self.writeToBackup(stringOfText: "\(recordText)\n")
+                                        self.writeToBackup(stringOfText: "\(recordText)")
                                         recordText = ""
                                         self.writeHeader = false
                                     }
@@ -751,17 +749,16 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                                     }
     //                                recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
                                     recordText = String(recordText[..<recordText.endIndex])
-                                    self.writeToBackup(stringOfText: "\(recordText)\n")
+                                    self.writeToBackup(stringOfText: "\(recordText)")
                                     recordText = ""
 
                                     
                                 }   // if let serverEndpointJSON - end
                             } catch {
-                                WriteToLog().message(stringOfText: "[- debug -] Existing endpoints: error serializing JSON: \(error)\n")
+                                WriteToLog().message(stringOfText: "[- debug -] Existing endpoints: error serializing JSON: \(error)")
                             }   // end do/catch
 
                             if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-        //                        WriteToLog().message(stringOfText: "\nbackup record: \(fn_fullRecordDict)\n")
                                 getResult = true
                             } else {
                                 // something failed

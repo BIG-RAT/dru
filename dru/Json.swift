@@ -22,7 +22,6 @@ class Json: NSObject, URLSessionDelegate {
         existingDestUrl = "\(theServer)/JSSResource/\(theEndpoint)"
         existingDestUrl = existingDestUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
-//        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
         WriteToLog().message(stringOfText: "[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
         let destEncodedURL = URL(string: existingDestUrl)
         let jsonRequest    = NSMutableURLRequest(url: destEncodedURL! as URL)
@@ -44,10 +43,8 @@ class Json: NSObject, URLSessionDelegate {
                         do {
                             let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                             if let endpointJSON = json as? [String:AnyObject] {
-//                                if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] \(endpointJSON)\n") }
                                 completion(endpointJSON)
                             } else {
-//                                WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
                                 completion([:])
                             }
                         }
@@ -55,18 +52,15 @@ class Json: NSObject, URLSessionDelegate {
                         if "\(httpResponse.statusCode)" == "401" {
                             Alert().display(header: "Attention:", message: "Verify username and password.")
                         }
-//                        WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
                         completion([:])
                     }
                 } else {
-//                    WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
                     completion([:])
                 }   // if let httpResponse - end
                 semaphore.signal()
                 if error != nil {
                 }
             })  // let task = destSession - end
-            //WriteToLog().message(stringOfText: "GET")
             task.resume()
         }   // getRecordQ - end
     }
