@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     let fm = FileManager()
     let vc = ViewController()
+    var isDir: ObjCBool = true
     
     // create blank data file - start
     @IBAction func blankDataFile(_ sender: NSMenuItem) {
@@ -34,12 +35,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let templateFileHandle = FileHandle(forUpdatingAtPath: (NSHomeDirectory() + "/Downloads/\(theTemplate)"))
             
             templateFileHandle?.write(header!)
-            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), saved to Downloads.")
+            Alert().display(header: "Attention", message: "Template file, \(theTemplate), saved to Downloads.")
         } else {
-            vc.alert_dialog("Attention", message: "Template file, \(theTemplate), already exists in Downloads.")
+            Alert().display(header: "Attention", message: "Template file, \(theTemplate), already exists in Downloads.")
         }
     }
     // create blank data file - end
+    @IBAction func showBackups(_ sender: Any) {
+        isDir = false
+        if (FileManager().fileExists(atPath: backup.path, isDirectory: &isDir)) {
+            NSWorkspace.shared.open(URL(fileURLWithPath: backup.path.appending("/.")))
+        } else {
+            Alert().display(header: "Alert", message: "There are currently no backup files to display.")
+        }
+    }
+    
+    @IBAction func showLogFolder(_ sender: Any) {
+        isDir = false
+        if (FileManager().fileExists(atPath: Log.path!.appending("/dru.log"), isDirectory: &isDir)) {
+            let logFiles = [URL(fileURLWithPath: Log.path!.appending("/dru.log"))]
+                    NSWorkspace.shared.activateFileViewerSelecting(logFiles)
+        } else {
+            Alert().display(header: "Alert", message: "There are currently no log files to display.")
+        }
+    }
     
     func applicationWillFinishLaunching(_ notification: Notification) {
 

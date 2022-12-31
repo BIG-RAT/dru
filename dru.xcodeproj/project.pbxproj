@@ -20,6 +20,9 @@
 		B5B03C4E1F8172510018DB04 /* settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5B03C4D1F8172510018DB04 /* settings.plist */; };
 		B5D0DB71245285EF00268CD4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D0DB70245285EF00268CD4 /* WebKit.framework */; };
 		B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F9E74A2385BB780095E9BC /* Globals.swift */; };
+		CE9152A9295E0930007B6892 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9152A8295E0930007B6892 /* LoginViewController.swift */; };
+		CE9152AB295E895F007B6892 /* TokenDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9152AA295E895F007B6892 /* TokenDelegate.swift */; };
+		CEDC88372947EF2B0001BCB7 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEDC88362947EF2B0001BCB7 /* Alert.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +42,9 @@
 		B5B03C4D1F8172510018DB04 /* settings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = settings.plist; sourceTree = "<group>"; };
 		B5D0DB70245285EF00268CD4 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B5F9E74A2385BB780095E9BC /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		CE9152A8295E0930007B6892 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		CE9152AA295E895F007B6892 /* TokenDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenDelegate.swift; sourceTree = "<group>"; };
+		CEDC88362947EF2B0001BCB7 /* Alert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,12 +80,15 @@
 			isa = PBXGroup;
 			children = (
 				B5106FCC234E75E70076761D /* dru.entitlements */,
+				CEDC88362947EF2B0001BCB7 /* Alert.swift */,
 				B573C7CB23CEC9800008ED34 /* ApiAction.swift */,
 				B5AC20441F38E0F700C16EAA /* AppDelegate.swift */,
 				B5106FCD234EB1C80076761D /* Credentials2.swift */,
 				B5F9E74A2385BB780095E9BC /* Globals.swift */,
 				B573C7C923CE80E90008ED34 /* Json.swift */,
+				CE9152A8295E0930007B6892 /* LoginViewController.swift */,
 				B543C78A1F3BDF8B0090227C /* PreviewController.swift */,
+				CE9152AA295E895F007B6892 /* TokenDelegate.swift */,
 				B5106FCF234EC68C0076761D /* UapiCall.swift */,
 				B5AC20461F38E0F700C16EAA /* ViewController.swift */,
 				B5510E0A25F94DA000E822E7 /* WriteToLog.swift */,
@@ -126,7 +135,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = jamf;
 				TargetAttributes = {
 					B5AC20401F38E0F700C16EAA = {
@@ -147,10 +156,9 @@
 			};
 			buildConfigurationList = B5AC203C1F38E0F700C16EAA /* Build configuration list for PBXProject "dru" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);
@@ -188,9 +196,12 @@
 				B573C7CC23CEC9800008ED34 /* ApiAction.swift in Sources */,
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
 				B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */,
+				CE9152AB295E895F007B6892 /* TokenDelegate.swift in Sources */,
 				B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */,
 				B5AC20451F38E0F700C16EAA /* AppDelegate.swift in Sources */,
+				CEDC88372947EF2B0001BCB7 /* Alert.swift in Sources */,
 				B543C78B1F3BDF8B0090227C /* PreviewController.swift in Sources */,
+				CE9152A9295E0930007B6892 /* LoginViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +245,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -241,6 +253,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -293,6 +306,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -300,6 +314,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -326,10 +341,12 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = PS2F6S478M;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 0.8.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -346,10 +363,12 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = PS2F6S478M;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MARKETING_VERSION = 0.8.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";

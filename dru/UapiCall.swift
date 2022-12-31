@@ -39,111 +39,52 @@ class UapiCall: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSession
         
         let b64creds = ("\(b64user):\(b64pass)".data(using: .utf8)?.base64EncodedString())!
         
-        token(serverUrl: jps, creds: b64creds) {
-            (returnedToken: String) in
-            if returnedToken == "" {
-                WriteToLog().message(stringOfText: "unable to get token")
-                completion([])
-                return
-            }
-            
+        URLCache.shared.removeAllCachedResponses()
+        
+        var workingUrlString = "\(jps)/uapi/\(endpoint)"
+        workingUrlString     = workingUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
+        
+        self.theUapiQ.maxConcurrentOperationCount = 1
+        
+        self.theUapiQ.addOperation {
             URLCache.shared.removeAllCachedResponses()
             
-            var workingUrlString = "\(jps)/uapi/\(endpoint)"
-            workingUrlString     = workingUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
+            let encodedURL = URL(string: workingUrlString)
+            let request = NSMutableURLRequest(url: encodedURL! as URL)
             
-            self.theUapiQ.maxConcurrentOperationCount = 1
+            let configuration  = URLSessionConfiguration.default
+            request.httpMethod = "GET"
             
-            self.theUapiQ.addOperation {
-                URLCache.shared.removeAllCachedResponses()
-                
-                let encodedURL = URL(string: workingUrlString)
-                let request = NSMutableURLRequest(url: encodedURL! as URL)
-                
-                let configuration  = URLSessionConfiguration.default
-                request.httpMethod = "GET"
-                
-                configuration.httpAdditionalHeaders = ["Authorization" : "Bearer \(returnedToken)", "Content-Type" : "application/json", "Accept" : "application/json"]
-                let session = Foundation.URLSession(configuration: configuration, delegate: self as URLSessionDelegate, delegateQueue: OperationQueue.main)
-                
-                let task = session.dataTask(with: request as URLRequest, completionHandler: {
-                    (data, response, error) -> Void in
-                    if let httpResponse = response as? HTTPURLResponse {
-                        if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
-                            let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-                            if let notificationsDictArray = json! as? [Dictionary<String, Any>] {
-                                completion(notificationsDictArray)
-                                return
-                            } else {    // if let endpointJSON error
-                                WriteToLog().message(stringOfText: "[UapiCall] get JSON error")
-                                completion([])
-                                return
-                            }
-                        } else {    // if httpResponse.statusCode <200 or >299
-                            WriteToLog().message(stringOfText: "[UapiCall] get response error: \(httpResponse.statusCode)")
+            configuration.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
+            let session = Foundation.URLSession(configuration: configuration, delegate: self as URLSessionDelegate, delegateQueue: OperationQueue.main)
+            
+            let task = session.dataTask(with: request as URLRequest, completionHandler: {
+                (data, response, error) -> Void in
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
+                        let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
+                        if let notificationsDictArray = json! as? [Dictionary<String, Any>] {
+                            completion(notificationsDictArray)
+                            return
+                        } else {    // if let endpointJSON error
+                            WriteToLog().message(stringOfText: "[UapiCall] get JSON error")
                             completion([])
                             return
                         }
-                        
-                    } else {
-                        WriteToLog().message(stringOfText: "\n HTTP error \n")
-                    }
-                })
-                task.resume()
-                
-            }   // theUapiQ.addOperation - end
-        }
-        
-    }   // func get - end
-    
-    func token(serverUrl: String, creds: String, completion: @escaping (_ returnedToken: String) -> Void) {
-        
-        URLCache.shared.removeAllCachedResponses()
-        
-        var token          = ""
-        
-        var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
-        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
-        
-        let tokenUrl       = URL(string: "\(tokenUrlString)")
-        let configuration  = URLSessionConfiguration.default
-        var request        = URLRequest(url: tokenUrl!)
-        request.httpMethod = "POST"
-        
-        configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(creds)", "Content-Type" : "application/json", "Accept" : "application/json"]
-        let session = Foundation.URLSession(configuration: configuration, delegate: self as URLSessionDelegate, delegateQueue: OperationQueue.main)
-        let task = session.dataTask(with: request as URLRequest, completionHandler: {
-            (data, response, error) -> Void in
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
-                    let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-                    if let endpointJSON = json! as? Dictionary<String, Any> {
-                        token = endpointJSON["token"] as! String
-                        SourceServer.url   = serverUrl
-                        SourceServer.creds = creds
-//                        WriteToLog().message(stringOfText: "[UapiCall] creds: \(creds)")
-                        completion(token)
-                        return
-                    } else {    // if let endpointJSON error
-                        WriteToLog().message(stringOfText: "JSON error")
-                        completion("")
+                    } else {    // if httpResponse.statusCode <200 or >299
+                        WriteToLog().message(stringOfText: "[UapiCall] get response error: \(httpResponse.statusCode)")
+                        completion([])
                         return
                     }
-                } else {    // if httpResponse.statusCode <200 or >299
-                    WriteToLog().message(stringOfText: "response error: \(httpResponse.statusCode)")
-                    completion("")
-                    return
+                    
+                } else {
+                    WriteToLog().message(stringOfText: "\n HTTP error \n")
                 }
-            } else {
-                WriteToLog().message(stringOfText: "token response error.  Verify url and port.")
-                completion("")
-                return
-            }
-        })
-        task.resume()
-        
-    }   // func token - end
-    
+            })
+            task.resume()
+            
+        }   // theUapiQ.addOperation - end
+    }   // func get - end
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping(  URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))

@@ -8,39 +8,25 @@
 
 import AppKit
 import Cocoa
-import CoreFoundation
-import WebKit
+import Foundation
+//import CoreFoundation
+//import WebKit
 
-class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate {
+class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDelegate, NSTextFieldDelegate {
 
     @IBOutlet weak var window: NSWindow!
     
-    @IBOutlet weak var jssURL_TextField: NSTextField!
-    @IBOutlet weak var userName_TextField: NSTextField!
-    @IBOutlet weak var userPass_TextField: NSSecureTextField!
-    @IBOutlet weak var saveCreds_Button: NSButton!
-
     @IBOutlet weak var dataFile_PathControl: NSPathControl!
     @IBOutlet weak var spinner: NSProgressIndicator!
-//    @IBOutlet weak var hasHeader_Button: NSButtonCell!  // 0 - no header : 1 - header
+
     @IBOutlet weak var deviceType_Matrix: NSMatrix! // 0 - computers : 1 - iOS
     
     @IBOutlet weak var backup_button: NSButton!
 
     @IBOutlet weak var remaining_TextField: NSTextField!
     @IBOutlet weak var updated_TextField: NSTextField!
-    @IBOutlet weak var created_TextField: NSTextField!
     @IBOutlet weak var failed_TextField: NSTextField!
-    
-    @IBAction func showVariables(_ sender: NSButton) {
-        print("jss url: \(jssURL_TextField.stringValue)")
-        print("login name: \(userName_TextField.stringValue)")
-        print("login password: \(userPass_TextField.stringValue)")
-        print("data file path: \(String(describing: dataFile_PathControl.url))")
-//        print("header: \(hasHeader_Button.integerValue)")
-        print("device type: \(deviceType_Matrix.selectedRow)")
-        print("sender: \(sender.title)")
-    }
+    @IBOutlet weak var connectedTo_TextField: NSTextField!
     
     var jssURL          = ""
     var userName        = ""
@@ -56,10 +42,6 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     
     var buildingsDict   = [String:String]()
     var departmentsDict = [String:String]()
-    
-    @IBOutlet weak var siteConnectionStatus_ImageView: NSImageView!
-    let statusImage:[NSImage] = [NSImage(named: "red-dot")!,
-                                 NSImage(named: "green-dot")!]
     
     @IBOutlet weak var fileOrDir_TextField: NSTextField!
     
@@ -97,13 +79,8 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     var format = PropertyListSerialization.PropertyListFormat.xml //format of the property list
     var plistData:[String:AnyObject] = [:]  // settings data
     let appSupportPath = (NSHomeDirectory() + "/Library/Application Support/dru/")
-    let backupPath = (NSHomeDirectory() + "/Library/Application Support/dru/backups/")
     let defaultSettings = Bundle.main.path(forResource: "settings", ofType: "plist")!
-    var backupFile = ""
-    var backupFileHandle = FileHandle(forUpdatingAtPath: "")
     var writeHeader = true
-    
-    let userDefaults = UserDefaults.standard
     
     @IBAction func f_backupBtnState(_ sender: NSButton) {
         DispatchQueue.main.async {
@@ -111,18 +88,34 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         }
     }
     
-    @IBAction func credentials_Action(_ sender: Any) {
-    
-        jssURL = jssURL_TextField.stringValue
-        userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
-        userDefaults.synchronize()
+    // Delegate Method
+    func sendLoginInfo(loginInfo: (String,String,String,Int)) {
+        var saveCredsState: Int?
+        (jamfProServer.source, jamfProServer.sourceUser, jamfProServer.sourcePwd,saveCredsState) = loginInfo
+        let jamfUtf8Creds = "\(jamfProServer.sourceUser):\(jamfProServer.sourcePwd)".data(using: String.Encoding.utf8)
+        jamfProServer.base64Creds["source"] = (jamfUtf8Creds?.base64EncodedString())!
         
-        userName = userName_TextField.stringValue
-        userPass = userPass_TextField.stringValue
-
-        saveCreds(server: jssURL, username: userName, password: userPass)
+        // check authentication, check version, set auth method - start
+        WriteToLog().message(stringOfText: "[ViewController] Running dru v\(appInfo.version)")
+        TokenDelegate().getToken(whichServer: "source", serverUrl: jamfProServer.source, base64creds: jamfProServer.base64Creds["source"]!) { [self]
+            authResult in
+            let (statusCode,theResult) = authResult
+            if theResult == "success" {
+                userDefaults.set(jamfProServer.source, forKey: "server")
+                userDefaults.set(jamfProServer.sourceUser, forKey: "username")
+                if saveCredsState == 1 {
+                    Credentials2().save(service: "lastrun-\(jamfProServer.source.fqdnFromUrl)", account: jamfProServer.sourceUser, data: jamfProServer.sourcePwd)
+                }
+                connectedTo_TextField.stringValue = "Connected to: " + jamfProServer.source.fqdnFromUrl
+            } else {
+                DispatchQueue.main.async { [self] in
+                    performSegue(withIdentifier: "loginView", sender: nil)
+//                        working(isWorking: false)
+                }
+            }
+        }
+        // check authentication - stop
     }
-    
     
     @IBAction func loadFile_PathControl(_ sender: NSPathControl) {
         spinner(isRunning: true)
@@ -163,7 +156,7 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
                         }
                         self.totalRecords = self.allXmlFilesArray.count
                     } catch {
-                        self.alert_dialog("Warning", message: "Error reading directory")
+                        Alert().display(header: "Warning", message: "Error reading directory")
                         WriteToLog().message(stringOfText: "Error reading directory")
                         self.spinner(isRunning: false)
                         return
@@ -224,7 +217,7 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     //                            }
                         // create header array - end
                         if self.safeHeaderArray.count == 0 {
-                            self.alert_dialog("Warning", message: "Unable to identify any headers!")
+                            Alert().display(header: "Warning", message: "Unable to identify any headers!")
                             self.spinner(isRunning: false)
                             return
                         }
@@ -262,9 +255,8 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         existing.buildings.removeAll()
         departmentsDict.removeAll()
         self.authResult = "succeeded"
-        Json().getRecord(theServer: "\(jssURL_TextField.stringValue)", base64Creds: SourceServer.creds, theEndpoint: "buildings") { [self]
-        (result: [String:AnyObject]) in
-            print("[parseFile_Button] results: \(result)")
+        Json().getRecord(theServer: "\(jamfProServer.source)", base64Creds: jamfProServer.base64Creds["source"]!, theEndpoint: "buildings") { [self]
+            (result: [String:AnyObject]) in
             if result.count == 0 {
                 // authentication failed
                 self.authResult = "failed"
@@ -285,7 +277,7 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             if (sender as AnyObject).title == "Update" {
                 if totalRecords > 0 {
                     // Fix - change this so it only writes with a successful auth
-                    userDefaults.set("\(jssURL_TextField.stringValue)", forKey: "jamfProURL")
+                    userDefaults.set("\(jamfProServer.source)", forKey: "jamfProURL")
                     
                     self.backupBtnState = self.backup_button.state.rawValue
                     
@@ -301,18 +293,13 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
                             let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
                             let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
                             WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
-        //                    WriteToLog().message(stringOfText: "generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
 
-                        //                        send API command/data
                             update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                                     (result: Bool) in
-                                //                        WriteToLog().message(stringOfText: "result: \(result)")
                                     if result {
                                         successCount += 1
-                                //                            WriteToLog().message(stringOfText: "successCount: \(successCount)\n")
                                     } else {
                                         failCount += 1
-                                //                            WriteToLog().message(stringOfText: "failCount: \(failCount)\n")
                                     }
                                     remaining -= 1
                                     self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
@@ -323,19 +310,13 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
                             for i in 0..<allRecordValuesArray.count {
                                 let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
                                 let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
-            //                  WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
-            //                  WriteToLog().message(stringOfText: "generateXml: \(generateXml(localRecordDict: allRecordValuesArray[i]))")
                                 
-            //                  send API command/data
                                 update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
                                     (result: Bool) in
-            //                        WriteToLog().message(stringOfText: "result: \(result)")
                                     if result {
                                         successCount += 1
-            //                            WriteToLog().message(stringOfText: "sucessCount: \(successCount)\n")
                                     } else {
                                         failCount += 1
-            //                            WriteToLog().message(stringOfText: "failCount: \(failCount)\n")
                                     }
                                     remaining -= 1
                                     self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
@@ -346,18 +327,22 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
                             break
                     }   // switch deviceType - end
                 } else {
-                    alert_dialog("Attention:", message: "No records found to update, verify CSV file.")
+                    Alert().display(header: "Attention:", message: "No records found to update, verify CSV file.")
                 }
             } else {
                 WriteToLog().message(stringOfText: "preview deviceType: \(deviceType)")
+                performSegue(withIdentifier: "preview", sender: nil)
             }
         }
         // fetch existing buildings and departments - end
     }
     
     
-    @IBAction func QuitNow(_ sender: AnyObject) {
-        NSApplication.shared.terminate(self)
+    @IBAction func logout(_ sender: AnyObject) {
+            DispatchQueue.main.async { [self] in
+                performSegue(withIdentifier: "loginView", sender: nil)
+                connectedTo_TextField.stringValue = ""
+            }
     }
   
     func createFieldArray(theString: String) -> [String] {
@@ -451,22 +436,22 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         return theValue
     }
     
-    func generateXml(deviceType: String, localRecordDict: Dictionary<String, String>) -> String {
-        var localDeviceName = ""
-        var localAssetTag = ""
-        var localSiteName = ""
-        var localUsername = ""
-        var localRealName = ""
+    func generateXml(deviceType: String, localRecordDict: [String: String]) -> String {
+        var localDeviceName   = ""
+        var localAssetTag     = ""
+        var localSiteName     = ""
+        var localUsername     = ""
+        var localRealName     = ""
         var localEmailAddress = ""
-        var localPosition = ""
-        var localPhone = ""
-        var localDepartment = ""
-        var localBuilding = ""
-        var localRoom = ""
-        var localEa = ""
-        var newValue = ""
+        var localPosition     = ""
+        var localPhone        = ""
+        var localDepartment   = ""
+        var localBuilding     = ""
+        var localRoom         = ""
+        var localEa           = ""
+        var newValue          = ""
         
-        var localDevice = ""    // define device xml tag, computer or mobile_device
+        var localDevice       = ""    // define device xml tag, computer or mobile_device
         
         for (key,value) in localRecordDict {
 //            WriteToLog().message(stringOfText: "key: \(key)\t value: \(value)")
@@ -477,13 +462,13 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             default:
                 newValue = value
             }
-            switch key {
+            switch key.lowercased() {
             case "deviceName":
                 value == "" ? (localDeviceName = "") : (localDeviceName = "<name>\(newValue)</name>")
             case "asset_tag":
                 value == "" ? (localUsername = "") : (localAssetTag = "<asset_tag>\(newValue)</asset_tag>")
             case "siteName":
-                (value == "" || value == "None") ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
+                value == "" ? (localSiteName = "") : (localSiteName = "<site><name>\(newValue)</name></site>")
             case "username":
                 value == "" ? (localUsername = "") : (localUsername = "<username>\(newValue)</username>")
             case "real_name":
@@ -512,7 +497,7 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             }
         }
         deviceType == "computers" ? (localDevice = "computer") : (localDevice = "mobile_device")
-        let generatedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        var generatedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<\(localDevice)><general>" +
             "\(localDeviceName)\(localAssetTag)\(localSiteName)" +
             "</general>" +
@@ -527,19 +512,16 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         WriteToLog().message(stringOfText: "[ViewController] generatedXml: \(generatedXml)")
         
         // verify building and/or department exists (when needed) before returning
-        if localRecordDict["building"] != nil {
-//            WriteToLog().message(stringOfText: "[ViewController-gneerateXML] localRecordDict: \(localRecordDict["building"]!.lowercased())")
+        if localRecordDict["building"] != nil && localRecordDict["building"] != "" {
             if existing.buildings[localRecordDict["building"]!.lowercased()] == nil {
-//                for (key,value) in buildingsDict {
-//                    WriteToLog().message(stringOfText: "[ViewController-gneerateXML] key: \(key) \t building: \(value)")
-//                }
-//                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create building: \(String(describing: localRecordDict["building"]!))")
-                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create building: \(String(describing: localBuilding))")
+                WriteToLog().message(stringOfText: "[ViewController-generateXML] [issue] device \(String(describing: localRecordDict["serial_number"]!)), need to create building: \(String(describing: localBuilding))")
+                generatedXml = "issue"
             }
         }
-        if localRecordDict["department"] != nil {
+        if localRecordDict["department"] != nil && localRecordDict["department"] != "" {
             if existing.departments[localRecordDict["department"]!.lowercased()] == nil {
-                WriteToLog().message(stringOfText: "[ViewController-gneerateXML] need to create department: \(String(describing: localRecordDict["department"]!))")
+                WriteToLog().message(stringOfText: "[ViewController-generateXML] [issue] device \(String(describing: localRecordDict["serial_number"]!)), need to create department: \(String(describing: localRecordDict["department"]!))")
+                generatedXml = "issue"
             }
         }
         return "\(generatedXml)"
@@ -547,17 +529,16 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     
     func update(DeviceType: String, endpointXML: String, endpointCurrent: Int, endpointCount: Int, action: String, uniqueID: String, completion: @escaping (Bool) -> Bool) {
         // this is where we create the new endpoint
+        if endpointXML == "issue" {
+            completion(false)
+            return
+        }
         let safeCharSet = CharacterSet.alphanumerics
-//        jssURL = self.jssURL_TextField.stringValue
+//        jssURL = self.jamfProServer.source
         var DestURL = ""
         let Uid = "\(uniqueID)".addingPercentEncoding(withAllowedCharacters: safeCharSet)!
         
-//        let jamfCreds = "\(userName_TextField.stringValue):\(userPass_TextField.stringValue)"
-//        let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
-//        jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
-
-//        DestURL = "\(jssURL)/JSSResource/\(self.deviceType)/\(self.recordId)/\(Uid)"
-        DestURL = "\(SourceServer.url)/JSSResource/\(DeviceType)/\(self.recordId)/\(Uid)"
+        DestURL = "\(jamfProServer.source)/JSSResource/\(DeviceType)/\(self.recordId)/\(Uid)"
         DestURL = DestURL.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
         
         theUpdateQ.maxConcurrentOperationCount = 3
@@ -574,8 +555,8 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             
             // backup record here
-            self.backup(deviceUrl: DestURL, fn_deviceType: DeviceType) {
-//                self.backup(deviceId: Uid, fn_deviceType: self.deviceType) {
+            self.backupRecord(deviceUrl: DestURL, fn_deviceType: DeviceType) {
+//                self.backupRecord(deviceId: Uid, fn_deviceType: self.deviceType) {
                 (backupResult: Bool) in
                 
 //                WriteToLog().message(stringOfText: "returned from backup: \(Uid)")
@@ -586,62 +567,42 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
                     request.httpMethod = "POST"
                 }
                 let configuration = URLSessionConfiguration.default
-//                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(self.jamfBase64Creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
-                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(SourceServer.creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
+                configuration.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/xml", "Accept" : "application/xml", "User-Agent" : appInfo.userAgentHeader]
                 request.httpBody = encodedXML!
                 let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: OperationQueue.main)
                 let task = session.dataTask(with: request as URLRequest, completionHandler: {
                     (data, response, error) -> Void in
                     if let httpResponse = response as? HTTPURLResponse {
-                        //print(httpResponse.statusCode)
-                        //print(httpResponse)
-//                        print("POST XML-endpointType: \(self.deviceType)")
-                        DispatchQueue.main.async {
-                            // http succeeded
-                        }
 
                         if httpResponse.statusCode >= 199 && httpResponse.statusCode <= 299 {
-                            WriteToLog().message(stringOfText: "\n\n---------- Success ----------")
-                            WriteToLog().message(stringOfText: "\(endpointXML)")
-                            WriteToLog().message(stringOfText: "---------- Success ----------")
+//                            WriteToLog().message(stringOfText: "---------- Success ----------")
+//                            WriteToLog().message(stringOfText: "\(endpointXML)")
+                            WriteToLog().message(stringOfText: "[update] updated \(DeviceType) \(Uid)")
                             completion(true)
                         } else {
                             // http failed
                             // 401 - wrong username and/or password
                             // 409 - unable to create object; already exists or data missing or xml error
+                            WriteToLog().message(stringOfText: "[update] failed to updated \(DeviceType) (\(Uid))")
                             WriteToLog().message(stringOfText: "[update] httpResponse: \(httpResponse)")
                             WriteToLog().message(stringOfText: "[update] statusCode: \(httpResponse.statusCode)")
                             WriteToLog().message(stringOfText: "[update] \(endpointXML)")
                             completion(false)
                         }
                     }
-                    
                     semaphore.signal()
                     if error != nil {
                     }
                 })
                 task.resume()
                 semaphore.wait()
-            
-                
             }   // backup - end
         }   // theOpQ.addOperation - end
     }
     
-    // func alert_dialog - start
-    func alert_dialog(_ header: String, message: String) {
-        let dialog: NSAlert = NSAlert()
-        dialog.messageText = header
-        dialog.informativeText = message
-        dialog.alertStyle = NSAlert.Style.warning
-        dialog.addButton(withTitle: "OK")
-        dialog.runModal()
-    }
-    // func alert_dialog - end
     
-    
-    func backup(deviceUrl: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
-//        func backup(deviceId: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
+    func backupRecord(deviceUrl: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
+//        func backupRecord(deviceId: String, fn_deviceType: String, completion: @escaping (_ backupResult: Bool) -> Void) {
         let semaphore = DispatchSemaphore(value: 1)
         
         if backupBtnState  == 1 {
@@ -656,9 +617,9 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             
             if !createdBackup {
                 dateTime = getDateTime(x: 1)
-                backupFile = backupPath + dateTime + ".csv"
-                createFileFolder(itemPath: backupFile, objectType: "file")
-                backupFileHandle = FileHandle(forUpdatingAtPath: backupFile)
+                backup.file = backup.path + dateTime + ".csv"
+                createFileFolder(itemPath: backup.file, objectType: "file")
+                backup.fileHandle = FileHandle(forUpdatingAtPath: backup.file)
                 writeHeader = true
                 createdBackup = true
             }
@@ -674,7 +635,7 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
 //                WriteToLog().message(stringOfText: "getting: \(deviceUrl)")
             
                 let configuration = URLSessionConfiguration.default
-                configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(SourceServer.creds)", "Accept" : "application/json"]
+                configuration.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
                 //            fn_request.httpBody = encodedXML!
                 let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: OperationQueue.main)
             
@@ -834,61 +795,6 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         return newValue
     }
     
-    func fetchCreds(url: String) {
-        let regexKey        = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
-        let credKey         = regexKey.stringByReplacingMatches(in: url, options: [], range: NSRange(0..<url.utf16.count), withTemplate: "")
-        
-        let tmpArray     = "\(credKey)".split(separator: ":")
-        let keychainFqdn = String(tmpArray[0])
-        
-        let credentailArray = Credentials2().retrieve(service: "dru - "+keychainFqdn)
-        
-        if credentailArray.count == 2 {
-            if (url != "") {
-                userName_TextField.stringValue = credentailArray[0]
-                userPass_TextField.stringValue = credentailArray[1]
-                credentials_Action(self)
-//                    self.storedSourceUser = credentailArray[0]
-            }   // if whichServer - end
-        } else {
-            // blank out username / password fields
-            userName_TextField.stringValue = ""
-            userPass_TextField.stringValue = ""
-//                self.storedSourceUser = ""
-//                source_user_field.becomeFirstResponder()
-        }
-    }
-    
-    func controlTextDidChange(_ obj: Notification) {
-//        print("staticSourceDataArray: \(staticSourceDataArray)")
-        if let textField = obj.object as? NSTextField {
-            switch textField.identifier!.rawValue {
-            case "username":
-                userName = userName_TextField.stringValue
-            case "password":
-                userPass = userPass_TextField.stringValue
-            case "serverURL":
-                jssURL = jssURL_TextField.stringValue
-            default:
-                break
-            }
-        }
-    }
-    func controlTextDidEndEditing(_ obj: Notification) {
-        if let textField = obj.object as? NSTextField {
-            switch textField.identifier!.rawValue {
-            case "username":
-                userName = userName_TextField.stringValue
-            case "password":
-                userPass = userPass_TextField.stringValue
-            case "serverURL":
-                fetchCreds(url: jssURL_TextField.stringValue)
-            default:
-                break
-            }
-        }
-    }
-    
     func createFileFolder(itemPath: String, objectType: String) {
         if !fm.fileExists(atPath: itemPath) {
 //          try to create backup directory
@@ -922,71 +828,31 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     }
 
     override func prepare(for segue: NSStoryboardSegue, sender: Any?) {
-//        print("[prepare]")
-        WriteToLog().message(stringOfText: "number of records: \(totalRecords)")
-        let previewController: PreviewController = segue.destinationController as! PreviewController
-        parseFile_Button(self)
-        
-        deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
-//        print("Selected device type: \(deviceType)")
-        
-        let jamfCreds = "\(userName_TextField.stringValue):\(userPass_TextField.stringValue)"
-        let jamfUtf8Creds = jamfCreds.data(using: String.Encoding.utf8)
-        jamfBase64Creds = (jamfUtf8Creds?.base64EncodedString())!
-        
-        previewController.authResult        = authResult
-        previewController.previewJssUrl     = jssURL_TextField.stringValue
-        previewController.previewJamfCreds  = jamfBase64Creds
-        previewController.previewDeviceType = deviceType
-        previewController.previewRecordID   = "serialnumber"  // what identifies the asset
-        
-        previewController.prevAllRecordValuesArray = allRecordValuesArray
-        previewController.prevLowercaseEaHeaderArray = safeEaHeaderArray
-    }
-    
-    func saveCreds(server: String, username: String, password: String) {
-        
-        var serverFqdn = ""
-        if ( server != "" && username != "" && password != "" ) {
-            
-            let urlRegex   = try! NSRegularExpression(pattern: "http(.*?)://", options:.caseInsensitive)
-            serverFqdn = urlRegex.stringByReplacingMatches(in: server, options: [], range: NSRange(0..<server.utf16.count), withTemplate: "")
-//            fqdn = "\(serverFqdn)"
-            
-            let b64creds = ("\(username):\(password)".data(using: .utf8)?.base64EncodedString())!
-            
-            // update the connection indicator for the site server
-            UapiCall().token(serverUrl: server, creds: b64creds) {
-                (returnedToken: String) in
-                if returnedToken != "" {
-                    WriteToLog().message(stringOfText: "authentication verified")
-                    DispatchQueue.main.async {
-                        self.siteConnectionStatus_ImageView.image = self.statusImage[1]
-                    }
-                    let tmpArray     = "\(serverFqdn)".split(separator: ":")
-                    let keychainFqdn = String(tmpArray[0])
-                    
-                    if self.saveCreds_Button.state.rawValue == 1 {
-                        Credentials2().save(service: "dru - \(keychainFqdn)", account: username, data: password)
-                    }
-                } else {
-                    WriteToLog().message(stringOfText: "authentication failed")
-                    DispatchQueue.main.async {
-                        self.siteConnectionStatus_ImageView.image = self.statusImage[0]
-                    }
-                }
-            } // UapiCall().token - end
-        }
+            if segue.identifier == "loginView" {
+                let loginVC: LoginViewController = segue.destinationController as! LoginViewController
+                loginVC.delegate = self
+            } else if segue.identifier == "preview" {
+                WriteToLog().message(stringOfText: "number of records: \(totalRecords)")
+                let previewVC: PreviewController = segue.destinationController as! PreviewController
+                
+                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+                //        print("Selected device type: \(deviceType)")
+                                
+                previewVC.authResult        = authResult
+                previewVC.previewDeviceType = deviceType
+                previewVC.previewRecordID   = "serialnumber"  // what identifies the asset
+                
+                previewVC.prevAllRecordValuesArray   = allRecordValuesArray
+                previewVC.prevLowercaseEaHeaderArray = safeEaHeaderArray
+            }
     }
     
     func spinner(isRunning: Bool) {
-//        DispatchQueue.main.async { [self] in
-            if isRunning {
-                spinner.startAnimation(self)
-            } else {
-                spinner.stopAnimation(self)
-            }
-//        }
+        if isRunning {
+            spinner.startAnimation(self)
+        } else {
+            spinner.stopAnimation(self)
+        }
     }
     
     func updateCounts(remaining: Int, updated: Int, created: Int, failed: Int) {
@@ -994,10 +860,10 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         DispatchQueue.main.async { [self] in
             //self.mySpinner_ImageView.rotate(byDegrees: CGFloat(self.deg))
             remaining_TextField.stringValue = "\(remaining)"
-            updated_TextField.stringValue = "\(updated)"
-            failed_TextField.stringValue = "\(failed)"
+            updated_TextField.stringValue   = "\(updated)"
+            failed_TextField.stringValue    = "\(failed)"
             if remaining == 0 {
-                backupFileHandle?.closeFile()
+                backup.fileHandle?.closeFile()
                 createdBackup  = false
                 attributeArray = [String]()
                 spinner(isRunning: false)
@@ -1008,9 +874,9 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     }
     
     func writeToBackup(stringOfText: String) {
-        self.backupFileHandle?.seekToEndOfFile()
+        backup.fileHandle?.seekToEndOfFile()
         let recordText = (stringOfText as NSString).data(using: String.Encoding.utf8.rawValue)
-        self.backupFileHandle?.write(recordText!)
+        backup.fileHandle?.write(recordText!)
     }
     
     func xmlEncode(rawString: String) -> String {
@@ -1036,16 +902,10 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        jssURL_TextField.delegate   = self
-        userName_TextField.delegate = self
-        userPass_TextField.delegate = self
-        jssURL_TextField.becomeFirstResponder()
-        jssURL_TextField.window?.makeFirstResponder(jssURL_TextField)
+
         // Create application support and backup folder
-        createFileFolder(itemPath: backupPath, objectType: "folder")
+        createFileFolder(itemPath: backup.path, objectType: "folder")
         dataFile_PathControl.allowedTypes = ["csv", "txt"]
-//        dataFile_PathControl.url = URL(string: NSHomeDirectory() + "/Downloads/")
         
         // Create preference file if missing - start
         if !(fm.fileExists(atPath: appSupportPath + "settings.plist")) {
@@ -1057,15 +917,6 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
             }
         }
         // Create preference file if missing - end
-        
-        // read environment settings - start
-        if let _ = userDefaults.string(forKey: "jamfProURL") {
-            jssURL_TextField.stringValue = userDefaults.string(forKey: "jamfProURL")!
-            fetchCreds(url: userDefaults.string(forKey: "jamfProURL")!)
-//            select_button.selectItem(withTitle: defaultValue_TextField.stringValue)
-        } else {
-            jssURL_TextField.stringValue = "https://"
-        }
         
         let plistXML = fm.contents(atPath: appSupportPath + "settings.plist")!
         do{
@@ -1079,6 +930,15 @@ class ViewController: NSViewController, URLSessionDelegate, NSTextFieldDelegate 
         }
         // read environment search settings - end
         
+    }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+
+        if showLoginWindow {
+            performSegue(withIdentifier: "loginView", sender: nil)
+            showLoginWindow = false
+        }
     }
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping(  URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {

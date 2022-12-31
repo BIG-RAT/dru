@@ -14,7 +14,7 @@ class Json: NSObject, URLSessionDelegate {
     
     func getRecord(theServer: String, base64Creds: String, theEndpoint: String, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
 
-        let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
+        let getRecordQ = OperationQueue() 
     
         URLCache.shared.removeAllCachedResponses()
         var existingDestUrl = ""
@@ -33,7 +33,7 @@ class Json: NSObject, URLSessionDelegate {
             
             jsonRequest.httpMethod = "GET"
             let destConf = URLSessionConfiguration.default
-            destConf.httpAdditionalHeaders = ["Authorization" : "Basic \(base64Creds)", "Content-Type" : "application/json", "Accept" : "application/json"]
+            destConf.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
             let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)
             let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
@@ -53,7 +53,7 @@ class Json: NSObject, URLSessionDelegate {
                         }
                     } else {
                         if "\(httpResponse.statusCode)" == "401" {
-                            ViewController().alert_dialog("Attention:", message: "Verify username and password.")
+                            Alert().display(header: "Attention:", message: "Verify username and password.")
                         }
 //                        WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
                         completion([:])
@@ -70,57 +70,6 @@ class Json: NSObject, URLSessionDelegate {
             task.resume()
         }   // getRecordQ - end
     }
-    
-    func getToken(serverUrl: String, base64creds: String, completion: @escaping (_ returnedToken: String) -> Void) {
-        
-        URLCache.shared.removeAllCachedResponses()
-        
-        var token          = ""
-        
-        var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
-        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
-//        WriteToLog().message(stringOfText: "\(tokenUrlString)")
-        
-        let tokenUrl       = URL(string: "\(tokenUrlString)")
-        let configuration  = URLSessionConfiguration.default
-        var request        = URLRequest(url: tokenUrl!)
-        request.httpMethod = "POST"
-        
-        configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(base64creds)", "Content-Type" : "application/json", "Accept" : "application/json"]
-        let session = Foundation.URLSession(configuration: configuration, delegate: self as URLSessionDelegate, delegateQueue: OperationQueue.main)
-        let task = session.dataTask(with: request as URLRequest, completionHandler: {
-            (data, response, error) -> Void in
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
-                    let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-                    if let endpointJSON = json! as? Dictionary<String, Any>, let _ = endpointJSON["token"] {
-                        token = endpointJSON["token"] as! String
-                        completion(token)
-                        return
-                    } else {    // if let endpointJSON error
-                        WriteToLog().message(stringOfText: "JSON error")
-                        completion("")
-                        return
-                    }
-                } else {    // if httpResponse.statusCode <200 or >299
-                    WriteToLog().message(stringOfText: "response error: \(httpResponse.statusCode)")
-
-                    if "\(httpResponse.statusCode)" == "401" {
-                        ViewController().alert_dialog("Attention:", message: "Failed to authenticate.  Verify username and password.")
-                    }
-                    completion("")
-                    return
-                }
-            } else {
-                WriteToLog().message(stringOfText: "token response error.  Verify url and port.")
-                ViewController().alert_dialog("Attention:", message: "No response from the server.  Verify URL and port.")
-                completion("")
-                return
-            }
-        })
-        task.resume()
-        
-    }   // func token - end
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping(  URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))

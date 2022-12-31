@@ -10,7 +10,7 @@ import Cocoa
 import Foundation
 import WebKit
 
-class PreviewController: NSViewController, URLSessionDelegate {
+class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelegate {
 
     @IBOutlet weak var preview_WebView: WKWebView!
     var myQ = DispatchQueue(label: "com.jamf.current")
@@ -18,6 +18,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
     @IBOutlet weak var webSpinner_ProgInd: NSProgressIndicator!
     @IBOutlet weak var whichRecord_TextField: NSTextField!
     @IBOutlet weak var goTo_TextField: NSTextField!
+    @IBOutlet weak var find_TextField: NSTextField!
     
     let vc = ViewController()
     
@@ -29,8 +30,6 @@ class PreviewController: NSViewController, URLSessionDelegate {
     var previewPage             = ""
     var previewPage2            = ""
     
-    var previewJssUrl           = ""
-    var previewJamfCreds        = ""
     var previewDeviceType       = ""
     var previewRecordID         = ""
     var authResult              = ""
@@ -38,45 +37,50 @@ class PreviewController: NSViewController, URLSessionDelegate {
     var currentValuesDict       = [String:String]()
     var generalDict             = [String:Any]()
     var locationDict            = [String:Any]()
-    var extAttributesDict       = [Dictionary<String, Any>]()
+    var extAttributesDict       = [[String: Any]]()
     var currentEaValuesDict     = [String:String]()
     var lowercaseEaValuesDict   = [String:String]()   // array of EA names [lowercase name:original name]
+    var recordBySerialNumber    = [String:Int]()
     
     var currentName             = ""
     var currentSerialnumber     = ""
     var currentDept             = ""
     
+    @IBAction func closePreview(_ sender: NSButton) {
+        view.window?.close()
+    }
+    
     @IBAction func goTo_Action(_ sender: Any) {
-        DispatchQueue.main.async {
-            self.currentRecord = Int(self.goTo_TextField.stringValue) ?? 0
-            if self.currentRecord > 0 && self.currentRecord <= self.prevAllRecordValuesArray.count {
-                self.webSpinner_ProgInd.startAnimation(self)
-                self.currentRecord -= 1
-                self.generatePage(recordNumber: self.currentRecord)
-                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        DispatchQueue.main.async { [self] in
+            currentRecord = Int(goTo_TextField.stringValue) ?? 0
+            if currentRecord > 0 && currentRecord <= prevAllRecordValuesArray.count {
+                webSpinner_ProgInd.startAnimation(self)
+                currentRecord -= 1
+                generatePage(recordNumber: currentRecord)
+                whichRecord_TextField.stringValue = "\(currentRecord+1) of \(prevAllRecordValuesArray.count)"
             }
         }
     }
     
     @IBAction func prevRecord_Button(_ sender: Any) {
-        DispatchQueue.main.async {
-            self.webSpinner_ProgInd.startAnimation(self)
-            self.goTo_TextField.stringValue = ""
-            self.currentRecord -= 1
-            self.currentRecord = (self.currentRecord < 0 ? self.prevAllRecordValuesArray.count-1:self.currentRecord)
-            self.generatePage(recordNumber: self.currentRecord)
-            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        DispatchQueue.main.async { [self] in
+            webSpinner_ProgInd.startAnimation(self)
+            goTo_TextField.stringValue = ""
+            currentRecord -= 1
+            currentRecord = (currentRecord < 0 ? prevAllRecordValuesArray.count-1:currentRecord)
+            generatePage(recordNumber: currentRecord)
+            whichRecord_TextField.stringValue = "\(currentRecord+1) of \(prevAllRecordValuesArray.count)"
         }
     }
     
     @IBAction func nextRecord_Button(_ sender: Any) {
-        DispatchQueue.main.async {
-            self.webSpinner_ProgInd.startAnimation(self)
-            self.goTo_TextField.stringValue = ""
-            self.currentRecord += 1
-            self.currentRecord = (self.currentRecord > self.prevAllRecordValuesArray.count-1 ? 0:self.currentRecord)
-            self.generatePage(recordNumber: self.currentRecord)
-            self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+        DispatchQueue.main.async { [self] in
+            webSpinner_ProgInd.startAnimation(self)
+            goTo_TextField.stringValue = ""
+            currentRecord += 1
+            currentRecord = (currentRecord > prevAllRecordValuesArray.count-1 ? 0:currentRecord)
+            generatePage(recordNumber: currentRecord)
+            whichRecord_TextField.stringValue = "\(currentRecord+1) of \(prevAllRecordValuesArray.count)"
         }
     }
     
@@ -140,21 +144,56 @@ class PreviewController: NSViewController, URLSessionDelegate {
     }
     
     
+    // selective list filter
+    func controlTextDidChange(_ obj: Notification) {
+        if let textField = obj.object as? NSTextField {
+            if textField.identifier!.rawValue == "search" {
+                let filter = find_TextField.stringValue.lowercased()
+//                print("filter: \(filter)")
+                if filter != "" {
+                    if recordBySerialNumber[filter] != nil {
+                        goTo_TextField.stringValue = "\(String(describing: recordBySerialNumber[filter]!))"
+                        goTo_Action(self)
+                    }
+                }
+            }
+        }
+    }
+    func controlTextDidEndEditing(_ obj: Notification) {
+        if let textField = obj.object as? NSTextField {
+            if textField.identifier!.rawValue == "search" {
+                let filter = find_TextField.stringValue.lowercased()
+//                print("filter: \(filter)")
+                if filter != "" {
+                    if recordBySerialNumber[filter] == nil {
+                        Alert().display(header: "Attention", message: "The device was not found within the list of imported records.")
+//                        find_TextField.stringValue = ""
+                    }
+                }
+            }
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 //        print("\(#line)-[PreviewController] authResult: \(authResult)")
 //        WriteToLog().message(stringOfText: "[PreviewController: viewDidLoad]")
+        find_TextField.delegate = self
         self.view.window?.orderOut(self)
-
         if authResult == "failed" {
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [self] in
                 self.view.window?.close()
             }
         } else {
             webSpinner_ProgInd.startAnimation(self)
             generatePage(recordNumber: 0)
-            DispatchQueue.main.async {
-                self.whichRecord_TextField.stringValue = "\(self.currentRecord+1) of \(self.prevAllRecordValuesArray.count)"
+            DispatchQueue.main.async { [self] in
+                whichRecord_TextField.stringValue = "\(currentRecord+1) of \(prevAllRecordValuesArray.count)"
+                for recordNumber in 0..<prevAllRecordValuesArray.count {
+                    if prevAllRecordValuesArray[recordNumber]["serial_number"] != nil {
+                        recordBySerialNumber["\(String(describing: prevAllRecordValuesArray[recordNumber]["serial_number"]!.lowercased()))"] = recordNumber+1
+                    }
+                }
             }
         }
     }
@@ -179,13 +218,13 @@ class PreviewController: NSViewController, URLSessionDelegate {
             let building     = "\(prevAllRecordValuesArray[recordNumber]["building"] ?? "")"
             let room         = "\(prevAllRecordValuesArray[recordNumber]["room"] ?? "")"
 
-            getEndpoint(id: serialNumber) {
+            getEndpoint(id: serialNumber) { [self]
                 (result: Dictionary) in
     //            WriteToLog().message(stringOfText: "[PreviewController] result: \(result)")
                 let existingValuesDict = result
     //            WriteToLog().message(stringOfText: "[PreviewController] bundle path: \(Bundle.main.bundlePath)")
                 // old background: #619CC7
-                self.previewPage = "<!DOCTYPE html>" +
+                previewPage = "<!DOCTYPE html>" +
                     "<html>" +
                     "<head>" +
                     "<style>" +
@@ -201,60 +240,62 @@ class PreviewController: NSViewController, URLSessionDelegate {
                     "<body>" +
                     "<table id='table1'>" +
                     "<tr>" +
-                    "<th style='width: 26%'></th>" +
+                    "<th style='width: 25%'></th>" +
                     "<th style='text-align:left; width: 37%'>Current</th>" +
-                    "<th style='text-align:left; width: 37%'>Update</th>" +
+                "<th style='text-align:left; width: 1px'> </th>" +
+                "<th style='text-align:left; width: 37%'>Update</th>" +
+                "<th style='text-align:left; width: 10px'> </th>" +
                     "</tr>" +
                     "<tr>" +
                     "<td style=\"text-align:right\">Device Name:</td>" +
                     
                     "<td>\(existingValuesDict["deviceName"] ?? "")</td>" +
-                    "<td>\(theDevice)</td>" +
+                    "<td> </td>" +
+                    "<td>\(theDevice)</td><td> </td>" +
                     "</tr>" +
-                    self.addTableRow(attribute: "Serial Number", existing: "\(existingValuesDict["serial_number"] ?? "")", update: "\(serialNumber)") +
-                    self.addTableRow(attribute: "Asset Tag", existing: "\(existingValuesDict["asset_tag"] ?? "")", update: "\(assetTag)") +
-                    "<tr>" +
-                    "<td style=\"text-align:right\">Site:</td>" +
-                    
-                    "<td>\(existingValuesDict["siteName"] ?? "")</td>" +
-                    "<td>\(site)</td>" +
-                    "</tr>" +
-                    self.addTableRow(attribute: "Username", existing: "\(existingValuesDict["username"] ?? "")", update: "\(username)") +
-                    self.addTableRow(attribute: "Realname", existing: "\(existingValuesDict["real_name"] ?? "")", update: "\(realname)") +
-                    self.addTableRow(attribute: "Email Address", existing: "\(existingValuesDict["email_address"] ?? "")", update: "\(emailAddress)") +
-                    self.addTableRow(attribute: "Phone Number", existing: "\(existingValuesDict["phone_number"] ?? "")", update: "\(phoneNumber)") +
-                    self.addTableRow(attribute: "Position", existing: "\(existingValuesDict["position"] ?? "")", update: "\(position)") +
-                    self.addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
-                    self.addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
-                    self.addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
+                    addTableRow(attribute: "Serial Number", existing: "\(existingValuesDict["serial_number"] ?? "")", update: "\(serialNumber)") +
+                    addTableRow(attribute: "Asset Tag", existing: "\(existingValuesDict["asset_tag"] ?? "")", update: "\(assetTag)") +
+//                    "<tr>" +
+//                    "<td style=\"text-align:right\">Site:</td>" +
+//
+//                    "<td>\(existingValuesDict["siteName"] ?? "")</td>" +
+//                    "<td>\(site)</td>" +
+//                    "</tr>" +
+                    addTableRow(attribute: "Site", existing: "\(existingValuesDict["siteName"] ?? "")", update: "\(site)") +
+                    addTableRow(attribute: "Username", existing: "\(existingValuesDict["username"] ?? "")", update: "\(username)") +
+                    addTableRow(attribute: "Realname", existing: "\(existingValuesDict["real_name"] ?? "")", update: "\(realname)") +
+                    addTableRow(attribute: "Email Address", existing: "\(existingValuesDict["email_address"] ?? "")", update: "\(emailAddress)") +
+                    addTableRow(attribute: "Phone Number", existing: "\(existingValuesDict["phone_number"] ?? "")", update: "\(phoneNumber)") +
+                    addTableRow(attribute: "Position", existing: "\(existingValuesDict["position"] ?? "")", update: "\(position)") +
+                    addTableRow(attribute: "Department", existing: "\(existingValuesDict["department"] ?? "")", update: "\(department)") +
+                    addTableRow(attribute: "Building", existing: "\(existingValuesDict["building"] ?? "")", update: "\(building)") +
+                    addTableRow(attribute: "Room", existing: "\(existingValuesDict["room"] ?? "")", update: "\(room)") +
 
-                    self.addEaToTable(updateValues: self.prevAllRecordValuesArray[recordNumber]) +
+                    addEaToTable(updateValues: prevAllRecordValuesArray[recordNumber]) +
 
                     "</table>" +
                     "</body>" +
                 "</html>"
-    //        WriteToLog().message(stringOfText: "[PreviewController] new test: \(previewPage)")
-                self.preview_WebView.loadHTMLString(self.previewPage, baseURL: nil)
-                self.webSpinner_ProgInd.stopAnimation(self)
+                preview_WebView.loadHTMLString(previewPage, baseURL: nil)
+                webSpinner_ProgInd.stopAnimation(self)
                 return [:]
             }
         } else {
-            ViewController().alert_dialog("Attention", message: "No records found to lookup.")
-            DispatchQueue.main.async {
-                self.view.window?.orderOut(self)
-                self.view.window?.close()
+            Alert().display(header: "Attention", message: "No records found to lookup.")
+            DispatchQueue.main.async { [self] in
+                view.window?.orderOut(self)
+                view.window?.close()
             }
-//            return
         }
         
     }
     
-    func getEndpoint(id: String, completion: @escaping (Dictionary<String, Any>) -> Dictionary<String, Any>) {
+    func getEndpoint(id: String, completion: @escaping ([String: Any]) -> [String: Any]) {
         let safeCharSet = CharacterSet.alphanumerics
         let uniqueID = id.addingPercentEncoding(withAllowedCharacters: safeCharSet)!
         let semaphore = DispatchSemaphore(value: 0)
         myQ.async {
-            var serverUrl = "\(self.previewJssUrl)/JSSResource/\(self.previewDeviceType)/\(self.previewRecordID)/\(uniqueID)"
+            var serverUrl = "\(jamfProServer.source)/JSSResource/\(self.previewDeviceType)/\(self.previewRecordID)/\(uniqueID)"
             serverUrl = serverUrl.replacingOccurrences(of: "//JSSResource", with: "/JSSResource")
 //            WriteToLog().message(stringOfText: "[PreviewController] serverUrl: \(serverUrl)")
             
@@ -263,7 +304,7 @@ class PreviewController: NSViewController, URLSessionDelegate {
 //            WriteToLog().message(stringOfText: "[PreviewController] serverRequest: \(serverRequest)")
             serverRequest.httpMethod = "GET"
             let serverConf = URLSessionConfiguration.default
-            serverConf.httpAdditionalHeaders = ["Authorization" : "Basic \(self.previewJamfCreds)", "Content-Type" : "application/json", "Accept" : "application/json"]
+            serverConf.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
             let serverSession = Foundation.URLSession(configuration: serverConf, delegate: self, delegateQueue: OperationQueue.main)
             let task = serverSession.dataTask(with: serverRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
@@ -272,7 +313,6 @@ class PreviewController: NSViewController, URLSessionDelegate {
                     do {
                         let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                         if let endpointJSON = json as? [String: Any] {
-                            print("preview case type: \(self.previewDeviceType.lowercased())")
 //                          WriteToLog().message(stringOfText: "[PreviewController] endpointJSON: \(endpointJSON)")
                             switch self.previewDeviceType.lowercased() {
                             case "computers":
@@ -397,19 +437,20 @@ class PreviewController: NSViewController, URLSessionDelegate {
 
         if existing != "" || update != "" {
             if ((existing != "" && update != "") && (existing != update)) {
-                updateText = "<td style='color:yellow;font-style: italic'>\(update)</td>"
+                updateText = "<td style='color:yellow;font-style: italic'>\(update)</td><td>C</td>"
             } else if (existing == "" && update != "") {
-                updateText = "<td style='color:aqua'>\(update)</td>"
+                updateText = "<td style='color:aqua'>\(update)</td><td>A</td>"
             } else {
-                updateText = "<td>\(existing)</td>"
+                updateText = "<td>\(existing)</td><td> </td>"
             }
             // mark attribute values getting removed
             if existing != "" && update == " " {
-                existingText = "<td style='color:redfont-style: bold'>\(existing)</td>"
+                existingText = "<td style='color:redfont-style: bold'>\(existing)</td><td> </td>"
             }
             currentRow = "<tr>" +
                 "<td style=\"text-align:right\">\(attribute):</td>" +
                 "\(existingText)" +
+                "<td> </td>" +
                 "\(updateText)" +
             "</tr>"
         }

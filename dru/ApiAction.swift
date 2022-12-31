@@ -44,7 +44,7 @@ class ApiAction: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessio
             let request = NSMutableURLRequest(url: encodedURL! as URL)
             request.httpMethod = "POST"
             let configuration = URLSessionConfiguration.default
-            configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(creds)", "Content-Type" : "text/xml", "Accept" : "text/xml"]
+            configuration.httpAdditionalHeaders = ["Authorization" : "\(String(describing: jamfProServer.authType["source"]!)) \(String(describing: jamfProServer.authCreds["source"]!))", "Content-Type" : "application/xml", "Accept" : "application/xml", "User-Agent" : appInfo.userAgentHeader]
             
             let encodedXML = xmlData.data(using: String.Encoding.utf8)
             request.httpBody = encodedXML!
