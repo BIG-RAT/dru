@@ -104,7 +104,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                 userDefaults.set(jamfProServer.source, forKey: "server")
                 userDefaults.set(jamfProServer.sourceUser, forKey: "username")
                 if saveCredsState == 1 {
-                    Credentials2().save(service: "lastrun-\(jamfProServer.source.fqdnFromUrl)", account: jamfProServer.sourceUser, data: jamfProServer.sourcePwd)
+                    Credentials2().save(service: "dru-\(jamfProServer.source.fqdnFromUrl)", account: jamfProServer.sourceUser, data: jamfProServer.sourcePwd)
                 }
                 connectedTo_TextField.stringValue = "Connected to: " + jamfProServer.source.fqdnFromUrl
             } else {
