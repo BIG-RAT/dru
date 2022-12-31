@@ -96,7 +96,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
         jamfProServer.base64Creds["source"] = (jamfUtf8Creds?.base64EncodedString())!
         
         // check authentication, check version, set auth method - start
-        WriteToLog().message(stringOfText: "[ViewController] Running dru v\(appInfo.version)")
+        WriteToLog().message(stringOfText: "\n[ViewController] Running dru v\(appInfo.version)")
         TokenDelegate().getToken(whichServer: "source", serverUrl: jamfProServer.source, base64creds: jamfProServer.base64Creds["source"]!) { [self]
             authResult in
             let (statusCode,theResult) = authResult

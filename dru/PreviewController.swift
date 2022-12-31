@@ -202,6 +202,10 @@ class PreviewController: NSViewController, NSTextFieldDelegate, URLSessionDelega
         self.view.window?.title = (previewDeviceType == "computers") ? "Device Preview: Computer":"Device Preview: Mobile Device"
     }
     
+    override func viewWillDisappear() {
+        find_TextField.stringValue = ""
+    }
+    
     func generatePage(recordNumber: Int) {
 //        WriteToLog().message(stringOfText: "[PreviewController] present values: \(prevAllRecordValuesArray[recordNumber])")
         if prevAllRecordValuesArray.count > 0 {
