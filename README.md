@@ -9,29 +9,30 @@ Provides the option to back-up a device record before updating it.  Note this is
 and can be dropped back into the app to restore values.<br>
 The backup folder can quickly be accessed from either tne menu bar (View --> Backups) or by using command + B.
 
-Preview potential changes on individual records before committing them.<br>
+Preview potential changes on individual records before committing them.  You can go to a particular device by either entering a serial number in the find field or entering a record number (line number of the device from the imported data) in the Go To field.<br>
 ![alt text](./images/dru.preview.png "preview")<br>
 Changes can be identified by either the color of the text in the Update column or the character at the far left of the atttibute being changed:
 <br>
-            <div style="margin-left: 55px;">
-               <table>
-                  <tr>
-                    <td>adding a value</td>
-                    <td>aqua</td>
-                    <td>A</td>
-                  </tr>
-                  <tr>
-                    <td>updating a value</td>
-                    <td>yellow</th>
-                     <td>U</th>
-                  </tr>
-                  <tr>
-                    <td>deleting a value</td>
-                    <td>red</th>
-                     <td>D</th>
-                  </tr>
-                </table></div><br>
+<div style="margin-left: 55px;">
+    <table>
+      <tr>
+        <td>adding a value</td>
+        <td>aqua</td>
+        <td>A</td>
+      </tr>
+      <tr>
+        <td>updating a value</td>
+        <td>yellow</th>
+          <td>U</th>
+      </tr>
+      <tr>
+        <td>deleting a value</td>
+        <td>red</th>
+          <td>D</th>
+      </tr>
+    </table></div><br>
 
+The Update button allows you to update the record currently being viewed.<br>
 
 To remove the value of an attribute enter a space as the value, leaving the value blank will leave the attribute value unchanged.<br>
 Note: only attributes that have a value or have a value being set are displayed.  Sites are an exception to this rule.<br>
