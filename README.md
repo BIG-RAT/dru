@@ -56,5 +56,7 @@ Updates are based on serial number, that being the only required data field (col
 
 ## History
 
+2022-01-02: v0.9.1 -  Fix issue where department could prevent an update.
+
 2022-12-31: v0.9.0 -  Layout change.  Update to support bearer token.  Various updates and fixed.
 
