@@ -252,86 +252,94 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     @IBAction func parseFile_Button(_ sender: Any) {
         // fetch existing buildings and departments - start
         buildingsDict.removeAll()
-        existing.buildings.removeAll()
         departmentsDict.removeAll()
+        existing.buildings.removeAll()
+        existing.departments.removeAll()
         self.authResult = "succeeded"
         Json().getRecord(theServer: "\(jamfProServer.source)", base64Creds: jamfProServer.base64Creds["source"]!, theEndpoint: "buildings") { [self]
             (result: [String:AnyObject]) in
-            if result.count == 0 {
-                // authentication failed
-                self.authResult = "failed"
-                DispatchQueue.main.async {
-                    self.spinner(isRunning: false)
-                }
-                return
-            }
+            
             let existingBuildingArray = result["buildings"] as! [[String:Any]]
             for theBuilding in existingBuildingArray {
                 if let _ = theBuilding["id"], let _ = theBuilding["name"] {
-                    self.buildingsDict[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
+//                    self.buildingsDict[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
                     existing.buildings[(theBuilding["name"] as! String).lowercased()] = (theBuilding["name"] as! String)
                 }
             }
             WriteToLog().message(stringOfText: "[parseFile_Button] existing.buildings: \(existing.buildings)")
-            deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
-            if (sender as AnyObject).title == "Update" {
-                if totalRecords > 0 {
-                    // Fix - change this so it only writes with a successful auth
-                    userDefaults.set("\(jamfProServer.source)", forKey: "jamfProURL")
-                    
-                    self.backupBtnState = self.backup_button.state.rawValue
-                    
-                    var successCount = 0
-                    var failCount    = 0
-                    var remaining    = allRecordValuesArray.count
+            
+            // fetch existing departments
+            Json().getRecord(theServer: "\(jamfProServer.source)", base64Creds: jamfProServer.base64Creds["source"]!, theEndpoint: "departments") { [self]
+                (result: [String:AnyObject]) in
+                
+                let existingDepartmentArray = result["departments"] as! [[String:Any]]
+                for theDepartment in existingDepartmentArray {
+                    if let _ = theDepartment["id"], let _ = theDepartment["name"] {
+                        existing.departments[(theDepartment["name"] as! String).lowercased()] = (theDepartment["name"] as! String)
+                    }
+                }
+                WriteToLog().message(stringOfText: "[parseFile_Button] existing.departments: \(existing.departments)")
+                
+                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+                if (sender as AnyObject).title == "Update" {
+                    if totalRecords > 0 {
+                        // Fix - change this so it only writes with a successful auth
+                        userDefaults.set("\(jamfProServer.source)", forKey: "jamfProURL")
+                        
+                        self.backupBtnState = self.backup_button.state.rawValue
+                        
+                        var successCount = 0
+                        var failCount    = 0
+                        var remaining    = allRecordValuesArray.count
 
-                    self.spinner(isRunning: true)
+                        self.spinner(isRunning: true)
 
-                switch deviceType {
-                    case "computers":
-                        for i in 0..<allRecordValuesArray.count {
-                            let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                            let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
-                            WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
-
-                            update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                                    (result: Bool) in
-                                    if result {
-                                        successCount += 1
-                                    } else {
-                                        failCount += 1
-                                    }
-                                    remaining -= 1
-                                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                                    return true
-                                }
-                            }
-                        case "mobiledevices":
+                    switch deviceType {
+                        case "computers":
                             for i in 0..<allRecordValuesArray.count {
                                 let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
-                                let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
-                                
-                                update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
-                                    (result: Bool) in
-                                    if result {
-                                        successCount += 1
-                                    } else {
-                                        failCount += 1
+                                let updateDeviceXml = "\(generateXml(deviceType: "computers", localRecordDict: allRecordValuesArray[i]))"
+                                WriteToLog().message(stringOfText: "valuesDict: \(allRecordValuesArray[i])")
+
+                                update(DeviceType: "computers", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                                        (result: Bool) in
+                                        if result {
+                                            successCount += 1
+                                        } else {
+                                            failCount += 1
+                                        }
+                                        remaining -= 1
+                                        self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                                        return true
                                     }
-                                    remaining -= 1
-                                    self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
-                                    return true
                                 }
-                            }
-                        default:
-                            break
-                    }   // switch deviceType - end
+                            case "mobiledevices":
+                                for i in 0..<allRecordValuesArray.count {
+                                    let Uid = "\(allRecordValuesArray[i]["serial_number"] ?? "")"
+                                    let updateDeviceXml = "\(generateXml(deviceType: "mobiledevices", localRecordDict: allRecordValuesArray[i]))"
+                                    
+                                    update(DeviceType: "mobiledevices", endpointXML: updateDeviceXml, endpointCurrent: i+1, endpointCount: allRecordValuesArray.count, action: "PUT", uniqueID: Uid) {
+                                        (result: Bool) in
+                                        if result {
+                                            successCount += 1
+                                        } else {
+                                            failCount += 1
+                                        }
+                                        remaining -= 1
+                                        self.updateCounts(remaining: remaining, updated: successCount, created: 0, failed: failCount)
+                                        return true
+                                    }
+                                }
+                            default:
+                                break
+                        }   // switch deviceType - end
+                    } else {
+                        Alert().display(header: "Attention:", message: "No records found to update, verify CSV file.")
+                    }
                 } else {
-                    Alert().display(header: "Attention:", message: "No records found to update, verify CSV file.")
+                    WriteToLog().message(stringOfText: "preview deviceType: \(deviceType)")
+                    performSegue(withIdentifier: "preview", sender: nil)
                 }
-            } else {
-                WriteToLog().message(stringOfText: "preview deviceType: \(deviceType)")
-                performSegue(withIdentifier: "preview", sender: nil)
             }
         }
         // fetch existing buildings and departments - end
