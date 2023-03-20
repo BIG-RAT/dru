@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21507"/>
         <plugIn identifier="com.apple.WebKit2IBPlugin" version="21507"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -455,7 +454,7 @@ DQ
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="dru" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="487" height="218"/>
+                        <rect key="frame" x="0.0" y="0.0" width="515" height="218"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <userGuides>
                             <userLayoutGuide location="212" affinity="minX"/>
@@ -495,9 +494,9 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7gJ-0t-qqQ">
-                                <rect key="frame" x="424" y="77" width="41" height="21"/>
+                                <rect key="frame" x="424" y="77" width="56" height="21"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="41" id="7e7-5V-TXj"/>
+                                    <constraint firstAttribute="width" constant="56" id="7e7-5V-TXj"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" continuous="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="bcQ-o8-LWK">
                                     <font key="font" metaFont="system"/>
@@ -506,9 +505,9 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Boc-nF-dIY">
-                                <rect key="frame" x="424" y="102" width="41" height="21"/>
+                                <rect key="frame" x="424" y="102" width="56" height="21"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="41" id="hC5-SN-LgA"/>
+                                    <constraint firstAttribute="width" constant="56" id="hC5-SN-LgA"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" continuous="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="uGa-AD-ZVd">
                                     <font key="font" metaFont="system"/>
@@ -517,9 +516,9 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PwU-E3-oCl">
-                                <rect key="frame" x="424" y="54" width="41" height="21"/>
+                                <rect key="frame" x="424" y="54" width="56" height="21"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="41" id="09d-ku-V3b"/>
+                                    <constraint firstAttribute="width" constant="56" id="09d-ku-V3b"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" continuous="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="Btu-0l-Fz0">
                                     <font key="font" metaFont="system"/>
@@ -528,9 +527,9 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <pathControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XSe-gU-E9H">
-                                <rect key="frame" x="114" y="162" width="356" height="25"/>
+                                <rect key="frame" x="114" y="162" width="364" height="25"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="350" id="uE5-qV-3v9"/>
+                                    <constraint firstAttribute="width" constant="358" id="uE5-qV-3v9"/>
                                 </constraints>
                                 <pathCell key="cell" selectable="YES" editable="YES" alignment="left" pathStyle="popUp" id="BPf-FY-BGz">
                                     <font key="font" metaFont="system"/>
@@ -557,7 +556,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="3ad-1z-AyC">
-                                <rect key="frame" x="228" y="90" width="32" height="32"/>
+                                <rect key="frame" x="242" y="90" width="32" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="32" id="xwL-oE-h11"/>
                                 </constraints>
@@ -614,7 +613,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UuN-FM-EGA">
-                                <rect key="frame" x="305" y="9" width="87" height="32"/>
+                                <rect key="frame" x="316" y="9" width="87" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="73" id="zO7-xa-AJc"/>
                                 </constraints>
@@ -627,7 +626,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5Nd-70-iZW">
-                                <rect key="frame" x="242" y="9" width="69" height="32"/>
+                                <rect key="frame" x="253" y="9" width="69" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="55" id="bn9-kH-s1e"/>
                                 </constraints>
@@ -640,7 +639,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Fz-Mr-sig">
-                                <rect key="frame" x="387" y="9" width="87" height="32"/>
+                                <rect key="frame" x="398" y="9" width="87" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="73" id="cve-I7-VR8"/>
                                 </constraints>
@@ -678,7 +677,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cbb-bn-wm4">
-                                <rect key="frame" x="17" y="197" width="453" height="14"/>
+                                <rect key="frame" x="17" y="197" width="481" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="center" id="UuT-8m-vB7">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -712,7 +711,7 @@ DQ
                             <constraint firstItem="t3R-gZ-0ha" firstAttribute="top" secondItem="6X0-PQ-Lh7" secondAttribute="bottom" constant="21" id="c9K-xS-TFe"/>
                             <constraint firstItem="t3R-gZ-0ha" firstAttribute="trailing" secondItem="GNr-1g-edS" secondAttribute="trailing" id="dTM-aC-Dj3"/>
                             <constraint firstItem="UuN-FM-EGA" firstAttribute="top" secondItem="2gc-4k-5p3" secondAttribute="bottom" constant="23" id="eqd-8b-Ydy"/>
-                            <constraint firstItem="XSe-gU-E9H" firstAttribute="trailing" secondItem="2Fz-Mr-sig" secondAttribute="trailing" id="g9R-CH-Zpy"/>
+                            <constraint firstItem="XSe-gU-E9H" firstAttribute="trailing" secondItem="2Fz-Mr-sig" secondAttribute="trailing" constant="-3" id="g9R-CH-Zpy"/>
                             <constraint firstItem="XSe-gU-E9H" firstAttribute="leading" secondItem="sub-Zb-Bwi" secondAttribute="trailing" constant="15" id="hPS-Wp-1I3"/>
                             <constraint firstItem="sub-Zb-Bwi" firstAttribute="centerY" secondItem="XSe-gU-E9H" secondAttribute="centerY" id="jzr-cW-Isj"/>
                             <constraint firstItem="t3R-gZ-0ha" firstAttribute="baseline" secondItem="Boc-nF-dIY" secondAttribute="baseline" id="k35-bO-9uo"/>
@@ -748,7 +747,7 @@ DQ
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="105.5" y="768"/>
+            <point key="canvasLocation" x="119.5" y="768"/>
         </scene>
         <!--Device Preview-->
         <scene sceneID="2Ph-EU-jyJ">
@@ -868,7 +867,7 @@ DQ
                                 </connections>
                             </textField>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="mrz-D2-FUU">
-                                <rect key="frame" x="107" y="4" width="24" height="24"/>
+                                <rect key="frame" x="107" y="4.5" width="24.5" height="24"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="24" id="LXV-lv-T8m"/>
                                 </constraints>
@@ -926,6 +925,6 @@ DQ
         </scene>
     </scenes>
     <resources>
-        <image name="magnifyingglass" catalog="system" width="15" height="15"/>
+        <image name="magnifyingglass" catalog="system" width="16" height="15"/>
     </resources>
 </document>

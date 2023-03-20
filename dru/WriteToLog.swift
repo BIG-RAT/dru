@@ -10,7 +10,7 @@ import Foundation
 class WriteToLog {
     
     let logFileW    = FileHandle(forUpdatingAtPath: Log.path! + Log.file)
-    var writeToLogQ = DispatchQueue(label: "com.jamf.writeToLogQ", qos: DispatchQoS.utility)
+//    var writeToLogQ = DispatchQueue(label: "com.jamf.writeToLogQ", qos: DispatchQoS.utility)
     
     func createLogFile() {
         if !param.fileManager.fileExists(atPath: Log.path! + Log.file) {
@@ -82,7 +82,7 @@ class WriteToLog {
         createLogFile()
         logCleanup() {
             (result: String) in
-            self.writeToLogQ.sync {
+//            self.writeToLogQ.sync {
                     let logString = "\(self.logDate()) \(stringOfText)\n"
                     
                     self.logFileW?.seekToEndOfFile()
@@ -90,7 +90,7 @@ class WriteToLog {
                     let logText = (logString as NSString).data(using: String.Encoding.utf8.rawValue)
                     self.logFileW?.write(logText!)
 //                self.logFileW?.closeFile()
-            }
+//            }
         }
     }
     
