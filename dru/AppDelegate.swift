@@ -13,7 +13,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     
     let fm = FileManager()
-    let vc = ViewController()
     var isDir: ObjCBool = true
     
     // create blank data file - start

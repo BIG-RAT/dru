@@ -19,7 +19,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     @IBOutlet weak var dataFile_PathControl: NSPathControl!
     @IBOutlet weak var spinner: NSProgressIndicator!
 
-    @IBOutlet weak var deviceType_Matrix: NSMatrix! // 0 - computers : 1 - iOS
+    @IBOutlet weak var deviceType_Matrix: NSMatrix! // 0 - iOS : 1 - macOS
     
     @IBOutlet weak var backup_button: NSButton!
 
@@ -27,6 +27,9 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     @IBOutlet weak var updated_TextField: NSTextField!
     @IBOutlet weak var failed_TextField: NSTextField!
     @IBOutlet weak var connectedTo_TextField: NSTextField!
+    
+    @IBOutlet weak var preview_Button: NSButton!
+    @IBOutlet weak var update_Button: NSButton!
     
     var jssURL          = ""
     var userName        = ""
@@ -39,6 +42,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     var attributeArray  = [String]()
     var createdBackup   = false
     var authResult      = "failed"
+    var startTime       = Date()
     
     var buildingsDict   = [String:String]()
     var departmentsDict = [String:String]()
@@ -250,6 +254,10 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     
     
     @IBAction func parseFile_Button(_ sender: Any) {
+        
+        preview_Button.isEnabled = false
+        update_Button.isEnabled  = false
+        
         // fetch existing buildings and departments - start
         buildingsDict.removeAll()
         departmentsDict.removeAll()
@@ -258,6 +266,13 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
         self.authResult = "succeeded"
         Json().getRecord(theServer: "\(jamfProServer.source)", base64Creds: jamfProServer.base64Creds["source"]!, theEndpoint: "buildings") { [self]
             (result: [String:AnyObject]) in
+            
+            for (key, _) in result {
+                if key == "logout" {
+                    logout(self)
+                    return
+                }
+            }
             
             let existingBuildingArray = result["buildings"] as! [[String:Any]]
             for theBuilding in existingBuildingArray {
@@ -280,9 +295,14 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                 }
                 WriteToLog().message(stringOfText: "[parseFile_Button] existing.departments: \(existing.departments)")
                 
-                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+                deviceType_Matrix.selectedRow == 0 ? (deviceType = "mobiledevices") : (deviceType = "computers")
                 if (sender as AnyObject).title == "Update" {
                     if totalRecords > 0 {
+                        
+                        // prevent device from going to sleep
+                        _ = disableSleep(reason: "starting process")
+                        startTime = Date()
+                        
                         // Fix - change this so it only writes with a successful auth
                         userDefaults.set("\(jamfProServer.source)", forKey: "jamfProURL")
                         
@@ -339,6 +359,8 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                 } else {
                     WriteToLog().message(stringOfText: "preview deviceType: \(deviceType)")
                     performSegue(withIdentifier: "preview", sender: nil)
+                    preview_Button.isEnabled = true
+                    update_Button.isEnabled  = true
                 }
             }
         }
@@ -348,6 +370,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
     
     @IBAction func logout(_ sender: AnyObject) {
             DispatchQueue.main.async { [self] in
+                spinner(isRunning: false)
                 performSegue(withIdentifier: "loginView", sender: nil)
                 connectedTo_TextField.stringValue = ""
             }
@@ -732,7 +755,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                                         for (tag, _) in fn_currentRecordDict {
                                             switch tag {
                                                 case "deviceName":
-                                                    xmlTag = "computer name"
+                                                    xmlTag = "display name"
                                                 case "siteName":
                                                     xmlTag = "site"
                                                 case "phone_number":
@@ -746,7 +769,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                                         }
     //                                    recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
                                         recordText = String(recordText[..<recordText.endIndex])
-                                        self.writeToBackup(stringOfText: "\(recordText)")
+                                        self.writeToBackup(stringOfText: "\(recordText)\n")
                                         recordText = ""
                                         self.writeHeader = false
                                     }
@@ -757,7 +780,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                                     }
     //                                recordText = recordText.substring(to: recordText.index(before: recordText.endIndex))  //swift 3 code
                                     recordText = String(recordText[..<recordText.endIndex])
-                                    self.writeToBackup(stringOfText: "\(recordText)")
+                                    self.writeToBackup(stringOfText: "\(recordText)\n")
                                     recordText = ""
 
                                     
@@ -840,7 +863,7 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                 WriteToLog().message(stringOfText: "number of records: \(totalRecords)")
                 let previewVC: PreviewController = segue.destinationController as! PreviewController
                 
-                deviceType_Matrix.selectedRow == 0 ? (deviceType = "computers") : (deviceType = "mobiledevices")
+                deviceType_Matrix.selectedRow == 0 ? (deviceType = "mobiledevices") : (deviceType = "computers")
                 //        print("Selected device type: \(deviceType)")
                                 
                 previewVC.authResult        = authResult
@@ -857,7 +880,20 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
             spinner.startAnimation(self)
         } else {
             spinner.stopAnimation(self)
+            preview_Button.isEnabled = true
+            update_Button.isEnabled  = true
+            _ = enableSleep()
         }
+    }
+    
+    private func timeDiff(forWhat: String = "runTime") -> (Int,Int,Int) {
+        var components:DateComponents?
+        components = Calendar.current.dateComponents([.second, .nanosecond], from: startTime, to: Date())
+        
+        let timeDifference = Int(components?.second! ?? 0)
+        let (h,r) = timeDifference.quotientAndRemainder(dividingBy: 3600)
+        let (m,s) = r.quotientAndRemainder(dividingBy: 60)
+        return(h,m,s)
     }
     
     func updateCounts(remaining: Int, updated: Int, created: Int, failed: Int) {
@@ -871,6 +907,10 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
                 backup.fileHandle?.closeFile()
                 createdBackup  = false
                 attributeArray = [String]()
+                if updated+created+failed > 0 {
+                    let (runHours, runMinutes, runSeconds) = timeDiff()
+                    WriteToLog().message(stringOfText: "runtime: \(runHours)h : \(runMinutes)m : \(runSeconds)s")
+                }
                 spinner(isRunning: false)
             } else if updated == 0 && created == 0 && failed == 0 {
                 spinner(isRunning: false)
@@ -912,28 +952,31 @@ class ViewController: NSViewController, SendingLoginInfoDelegate, URLSessionDele
         createFileFolder(itemPath: backup.path, objectType: "folder")
         dataFile_PathControl.allowedTypes = ["csv", "txt"]
         
-        // Create preference file if missing - start
-        if !(fm.fileExists(atPath: appSupportPath + "settings.plist")) {
-            do {
-                try fm.copyItem(atPath: defaultSettings, toPath: appSupportPath + "settings.plist")
+        WriteToLog().logCleanup() { [self]
+            (result: String) in
+            // Create preference file if missing - start
+            if !(fm.fileExists(atPath: appSupportPath + "settings.plist")) {
+                do {
+                    try fm.copyItem(atPath: defaultSettings, toPath: appSupportPath + "settings.plist")
+                }
+                catch let error as NSError {
+                    WriteToLog().message(stringOfText: "File copy failed! Something went wrong: \(error)")
+                }
             }
-            catch let error as NSError {
-                NSLog("File copy failed! Something went wrong: \(error)")
-            }
-        }
-        // Create preference file if missing - end
-        
-        let plistXML = fm.contents(atPath: appSupportPath + "settings.plist")!
-        do{
-            plistData = try PropertyListSerialization.propertyList(from: plistXML,
-                                                                   options: .mutableContainersAndLeaves,
-                                                                   format: &format)
+            // Create preference file if missing - end
+            
+            let plistXML = fm.contents(atPath: appSupportPath + "settings.plist")!
+            do{
+                plistData = try PropertyListSerialization.propertyList(from: plistXML,
+                                                                       options: .mutableContainersAndLeaves,
+                                                                       format: &format)
                 as! [String:AnyObject]
+            }
+            catch {
+                WriteToLog().message(stringOfText: "Error reading plist: \(error), format: \(format)")
+            }
+            // read environment search settings - end
         }
-        catch{
-            WriteToLog().message(stringOfText: "Error reading plist: \(error), format: \(format)")
-        }
-        // read environment search settings - end
         
     }
     

@@ -10,7 +10,6 @@ import Foundation
 class WriteToLog {
     
     let logFileW    = FileHandle(forUpdatingAtPath: Log.path! + Log.file)
-//    var writeToLogQ = DispatchQueue(label: "com.jamf.writeToLogQ", qos: DispatchQoS.utility)
     
     func createLogFile() {
         if !param.fileManager.fileExists(atPath: Log.path! + Log.file) {
@@ -53,9 +52,10 @@ class WriteToLog {
                     if Int("\(logSize ?? 0)")! > Log.maxSize {
                         let dateTmpArray = getCurrentTime().split(separator: "_")
                         let dateStamp    = dateTmpArray[0]
-                        zipIt(args: "/usr/bin/zip -rm -jj -o \(Log.path!)jamfStatus_\(dateStamp) \(Log.path!)\(Log.file)") {
+                        zipIt(args: "/usr/bin/zip -rm -jj -o \(Log.path!)dru_\(dateStamp) \(Log.path!)\(Log.file)") {
                             (result: String) in
                             print("zipIt result: \(result)")
+                            // create new log file
                             self.createLogFile()
                             completionHandler(result)
                             return
@@ -64,6 +64,8 @@ class WriteToLog {
                 }
             } catch {
                 print("no history")
+                // create new log file
+                self.createLogFile()
                 completionHandler("")
                 return
             }
@@ -79,9 +81,9 @@ class WriteToLog {
                 
             }
         }
-        createLogFile()
-        logCleanup() {
-            (result: String) in
+//        createLogFile()
+//        logCleanup() {
+//            (result: String) in
 //            self.writeToLogQ.sync {
                     let logString = "\(self.logDate()) \(stringOfText)\n"
                     
@@ -91,7 +93,7 @@ class WriteToLog {
                     self.logFileW?.write(logText!)
 //                self.logFileW?.closeFile()
 //            }
-        }
+//        }
     }
     
     func getCurrentTime() -> String {

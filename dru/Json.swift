@@ -52,7 +52,7 @@ class Json: NSObject, URLSessionDelegate {
                         if "\(httpResponse.statusCode)" == "401" {
                             Alert().display(header: "Attention:", message: "Verify username and password.")
                         }
-                        completion([:])
+                        completion(["logout":"" as AnyObject])
                     }
                 } else {
                     completion([:])

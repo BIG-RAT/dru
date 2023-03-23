@@ -18,6 +18,7 @@
 		B5AC20491F38E0F700C16EAA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B5AC20481F38E0F700C16EAA /* Assets.xcassets */; };
 		B5AC204C1F38E0F700C16EAA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B5AC204A1F38E0F700C16EAA /* Main.storyboard */; };
 		B5B03C4E1F8172510018DB04 /* settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5B03C4D1F8172510018DB04 /* settings.plist */; };
+		B5BB0D8E29C88D130020363A /* Awake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BB0D8D29C88D130020363A /* Awake.swift */; };
 		B5D0DB71245285EF00268CD4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5D0DB70245285EF00268CD4 /* WebKit.framework */; };
 		B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F9E74A2385BB780095E9BC /* Globals.swift */; };
 		CE9152A9295E0930007B6892 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE9152A8295E0930007B6892 /* LoginViewController.swift */; };
@@ -40,6 +41,7 @@
 		B5AC204B1F38E0F700C16EAA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B5AC204D1F38E0F700C16EAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B5B03C4D1F8172510018DB04 /* settings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = settings.plist; sourceTree = "<group>"; };
+		B5BB0D8D29C88D130020363A /* Awake.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Awake.swift; sourceTree = "<group>"; };
 		B5D0DB70245285EF00268CD4 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B5F9E74A2385BB780095E9BC /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		CE9152A8295E0930007B6892 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				CEDC88362947EF2B0001BCB7 /* Alert.swift */,
 				B573C7CB23CEC9800008ED34 /* ApiAction.swift */,
 				B5AC20441F38E0F700C16EAA /* AppDelegate.swift */,
+				B5BB0D8D29C88D130020363A /* Awake.swift */,
 				B5106FCD234EB1C80076761D /* Credentials2.swift */,
 				B5F9E74A2385BB780095E9BC /* Globals.swift */,
 				B573C7C923CE80E90008ED34 /* Json.swift */,
@@ -135,7 +138,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1410;
 				ORGANIZATIONNAME = jamf;
 				TargetAttributes = {
 					B5AC20401F38E0F700C16EAA = {
@@ -194,6 +197,7 @@
 				B5106FD0234EC68C0076761D /* UapiCall.swift in Sources */,
 				B573C7CC23CEC9800008ED34 /* ApiAction.swift in Sources */,
 				B5AC20471F38E0F700C16EAA /* ViewController.swift in Sources */,
+				B5BB0D8E29C88D130020363A /* Awake.swift in Sources */,
 				B5F9E74B2385BB780095E9BC /* Globals.swift in Sources */,
 				CE9152AB295E895F007B6892 /* TokenDelegate.swift in Sources */,
 				B5106FCE234EB1C80076761D /* Credentials2.swift in Sources */,
@@ -348,7 +352,7 @@
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 0.9.1;
+				MARKETING_VERSION = 0.9.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -372,7 +376,7 @@
 				INFOPLIST_FILE = dru/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
-				MARKETING_VERSION = 0.9.1;
+				MARKETING_VERSION = 0.9.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamf.pse.dru;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

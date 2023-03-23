@@ -56,6 +56,8 @@ Updates are based on serial number, that being the only required data field (col
 
 ## History
 
+2023-03-23: v0.9.2 - Updated UI.  Code updates to increase performance reduce crashes.  Prevent machine from going to sleep while uploading. Fixed issue with file created when 'backup records before updating' is selected.
+
 2022-01-02: v0.9.1 -  Fix issue where department could prevent an update.
 
 2022-12-31: v0.9.0 -  Layout change.  Update to support bearer token.  Various updates and fixed.
